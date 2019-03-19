@@ -1,0 +1,1 @@
+{"a1":{"required":[],"required_only":false},"a2":{"required":[],"required_only":false},"a3":{"required":[],"required_only":false},"fs1":{"required":["ext2.h"],"required_only":false},"fs2":{"required":[],"required_only":false},"fs3":{"required":["readimage.c","ext2.h"],"required_only":false},"a4":{"required":[],"required_only":false}}
