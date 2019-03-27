@@ -6,12 +6,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <errno.h>
 #include "ext2.h"
 
 unsigned char *disk;
 int main(int argc, char **argv) {
-    if(argc != 2) {
-        fprintf(stderr, "Usage: %s <image file name>\n", argv[0]);
+    if(argc != 3) {
+        fprintf(stderr, "Usage: %s <image file name> <path>\n", argv[0]);
         exit(1);
     }
     int fd = open(argv[1], O_RDWR);
@@ -24,5 +25,11 @@ int main(int argc, char **argv) {
     if(disk == MAP_FAILED) {
         perror("mmap");
         exit(1);
+    }
+
+    char *path = argv[2];
+    if (path[0] != '\\'){
+        perror('Not absolute path');
+        return ENOENT;
     }
 }
