@@ -1,0 +1,38 @@
+== INFORMATION ==
+Superblock
+  Inodes count:32
+  Blocks count:128
+  Free blocks count:104
+  Free inodes count:20
+Blockgroup
+  Block bitmap:3
+  Inode bitmap:4
+  Inode table:5
+  Free blocks count:104
+  Free inodes count:20
+  Used directories:3
+Inode bitmap: 11111111111100000000000000000000
+Block bitmap: 1111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+Used blocks (Block NUMBER): 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 
+Used inodes (Inode NUMBER): 1 2 3 4 5 6 7 8 9 10 11 12 
+
+== FILESYSTEM TREE ==
+[ 2] '.' EXT2_FT_DIR; rec length: 12 
+[ 2] '..' EXT2_FT_DIR; rec length: 12 
+[11] 'lost+found' EXT2_FT_DIR; rec length: 20 
+    [11] '.' EXT2_FT_DIR; rec length: 12 
+    [ 2] '..' EXT2_FT_DIR; rec length: 1012 
+[12] 'level1' EXT2_FT_DIR; rec length: 980 
+    [12] '.' EXT2_FT_DIR; rec length: 12 
+    [ 2] '..' EXT2_FT_DIR; rec length: 1012 
+
+== INODE DUMP ==
+INODE 2: {size:1024, links:4, blocks:2, dtime: 0}
+  Inode References (Index->Block Number): 0->9 
+  TYPE: EXT2_S_IFDIR
+INODE 11: {size:12288, links:2, blocks:24, dtime: 0}
+  TYPE: EXT2_S_IFDIR
+INODE 12: {size:1024, links:2, blocks:2, dtime: 0}
+  Inode References (Index->Block Number): 0->23 
+  TYPE: EXT2_S_IFDIR

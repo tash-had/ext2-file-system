@@ -1,0 +1,56 @@
+== INFORMATION ==
+Superblock
+  Inodes count:32
+  Blocks count:128
+  Free blocks count:102
+  Free inodes count:18
+Blockgroup
+  Block bitmap:3
+  Inode bitmap:4
+  Inode table:5
+  Free blocks count:102
+  Free inodes count:18
+  Used directories:4
+Inode bitmap: 11111111111110100000000000000000
+Block bitmap: 1111111111111111111111100000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+
+Used blocks (Block NUMBER): 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 29 127 
+Used inodes (Inode NUMBER): 1 2 3 4 5 6 7 8 9 10 11 12 13 15 
+
+== FILESYSTEM TREE ==
+[ 2] '.' EXT2_FT_DIR; rec length: 12 
+[ 2] '..' EXT2_FT_DIR; rec length: 12 
+[11] 'lost+found' EXT2_FT_DIR; rec length: 20 
+    [11] '.' EXT2_FT_DIR; rec length: 12 
+    [ 2] '..' EXT2_FT_DIR; rec length: 1012 
+[12] 'level1' EXT2_FT_DIR; rec length: 980 
+    [12] '.' EXT2_FT_DIR; rec length: 12 
+    [ 2] '..' EXT2_FT_DIR; rec length: 32 
+    [15] 'bfile' EXT2_FT_REG_FILE; rec length: 16 
+    [13] 'level2' EXT2_FT_DIR; rec length: 964 
+        [13] '.' EXT2_FT_DIR; rec length: 12 
+        [12] '..' EXT2_FT_DIR; rec length: 1012 
+
+== INODE DUMP ==
+INODE 2: {size:1024, links:4, blocks:2, dtime: 0}
+  Inode References (Index->Block Number): 0->9 
+  TYPE: EXT2_S_IFDIR
+INODE 11: {size:12288, links:2, blocks:24, dtime: 0}
+  TYPE: EXT2_S_IFDIR
+INODE 12: {size:1024, links:3, blocks:2, dtime: 0}
+  Inode References (Index->Block Number): 0->127 
+  TYPE: EXT2_S_IFDIR
+INODE 13: {size:1024, links:2, blocks:2, dtime: 0}
+  Inode References (Index->Block Number): 0->23 
+  TYPE: EXT2_S_IFDIR
+INODE 15: {size:128, links:1, blocks:2, dtime: 0}
+  Inode References (Index->Block Number): 0->29 
+  TYPE: EXT2_S_IFREG
+  > 00000000: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 bbbbbbbbbbbbbbbb
+  > 00000010: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 bbbbbbbbbbbbbbbb
+  > 00000020: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 bbbbbbbbbbbbbbbb
+  > 00000030: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 bbbbbbbbbbbbbbbb
+  > 00000040: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 bbbbbbbbbbbbbbbb
+  > 00000050: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 bbbbbbbbbbbbbbbb
+  > 00000060: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 bbbbbbbbbbbbbbbb
+  > 00000070: 62 62 62 62 62 62 62 62 62 62 62 62 62 62 62 0a bbbbbbbbbbbbbbb.
