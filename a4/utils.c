@@ -63,7 +63,7 @@ void init_inode(unsigned char *disk, int type, int inode_num, int block_num){
     new_inode->i_uid = 0;
     new_inode->i_size = EXT2_BLOCK_SIZE;
     new_inode->i_gid = 0;
-    new_inode->i_links_count = 0;
+    new_inode->i_links_count = 1;
     new_inode->i_blocks = 0;
     new_inode->osd1 = 0;
     for (int i = 0; i < 15; i++){
