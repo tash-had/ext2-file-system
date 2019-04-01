@@ -24,13 +24,13 @@ int allocate_next_free(unsigned char *disk, int type){
     int count;
     if (type & BLOCK){
         // next free block
-        *bitmap = (unsigned char *)(disk + EXT2_BLOCK_SIZE*gd->bg_block_bitmap);
+        bitmap = (disk + EXT2_BLOCK_SIZE*gd->bg_block_bitmap);
         count = sb->s_blocks_count / 8;
 
     }
     else {
         // Next free inode
-        *bitmap = (unsigned char *)(disk + EXT2_BLOCK_SIZE*gd->bg_inode_bitmap);
+        bitmap = (disk + EXT2_BLOCK_SIZE*gd->bg_inode_bitmap);
         count = sb->s_inodes_count / 8;
 
     }
@@ -57,27 +57,28 @@ int allocate_next_free(unsigned char *disk, int type){
 void init_inode(unsigned char *disk, int type, int inode_num, int block_num){
     struct ext2_group_desc *gd = (struct ext2_group_desc *)(disk + EXT2_BLOCK_SIZE*2);
     struct ext2_inode *inode_table = (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE*gd->bg_inode_table);
-    struct ext2_inode *new_inode;
-    inode_table[inode_num-1] = *new_inode;
-    new_inode->i_mode = type;
-    new_inode->i_uid = 0;
-    new_inode->i_size = EXT2_BLOCK_SIZE;
-    new_inode->i_gid = 0;
-    new_inode->i_links_count = 1;
-    new_inode->i_blocks = 0;
-    new_inode->osd1 = 0;
+    struct ext2_inode new_inode;
+
+    new_inode.i_mode = (unsigned short) type;
+    new_inode.i_uid = 0;
+    new_inode.i_size = EXT2_BLOCK_SIZE;
+    new_inode.i_gid = 0;
+    new_inode.i_links_count = 1;
+    new_inode.i_blocks = 0;
+    new_inode.osd1 = 0;
     for (int i = 0; i < 15; i++){
-        new_inode->i_block[i] = 0;
+        new_inode.i_block[i] = 0;
     }
-    new_inode->i_block[0] = block_num;
-    new_inode->i_generation = 0;
-    new_inode->i_file_acl = 0;   
-	new_inode->i_dir_acl = 0;    
-	new_inode->i_faddr = 0;     
-	for (int i = 0; i < 3; i++){
-        new_inode->extra[i] = 0;
+    new_inode.i_block[0] = (unsigned  int) block_num;
+    new_inode.i_generation = 0;
+    new_inode.i_file_acl = 0;
+    new_inode.i_dir_acl = 0;
+    new_inode.i_faddr = 0;
+    for (int i = 0; i < 3; i++){
+        new_inode.extra[i] = 0;
     }
 
+    inode_table[inode_num-1] = new_inode;
 
 }
 
