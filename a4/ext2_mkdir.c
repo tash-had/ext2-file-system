@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "string.h"
+#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -31,5 +31,22 @@ int main(int argc, char **argv) {
     if (path[0] != '\\'){
         perror('Not absolute path');
         return ENOENT;
+    }
+
+    char *curr_token = strtok(path, "\\");
+    char *next_token;
+    while (curr_token != NULL){
+        next_token = strtok(path, "\\");
+        //find inode of token
+
+        //if doesnt exist -> RETURN -EEXIST
+
+        //if next_token is NULL
+            //if curr_token already exist -> RETURN "path already exists"
+
+            //else init + create dir_entry @ curr_token
+        curr_token = next_token;
+        
+
     }
 }
