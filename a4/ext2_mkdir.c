@@ -8,8 +8,11 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include "ext2.h"
+#include "utils.c"
 
 unsigned char *disk;
+
+
 int main(int argc, char **argv) {
     if(argc != 3) {
         fprintf(stderr, "Usage: %s <image file name> <path>\n", argv[0]);
@@ -32,15 +35,22 @@ int main(int argc, char **argv) {
         perror('Not absolute path');
         return ENOENT;
     }
-
+    struct ext2_group_desc *gd = (struct ext2_group_desc *)(disk + EXT2_BLOCK_SIZE*2);
+    struct ext2_inode *inode_table = (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE*gd->bg_inode_table);
+    int free_block = allocate_next_free(disk, BLOCK);
+    int free_inode = allocate_next_free(disk, INODE);
+    if (free_block == -1 || free_inode == -1){
+        perror("No space");
+        return ENOSPC;
+    }
     char *curr_token = strtok(path, "\\");
     char *next_token;
     while (curr_token != NULL){
-        next_token = strtok(path, "\\");
+        next_token = strtok(NULL, "\\");
         //find inode of token
 
         //if doesnt exist -> RETURN -EEXIST
-
+        
         //if next_token is NULL
             //if curr_token already exist -> RETURN "path already exists"
 
@@ -49,4 +59,6 @@ int main(int argc, char **argv) {
         
 
     }
+
+
 }
