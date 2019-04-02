@@ -1,5 +1,5 @@
 #include "path_utils.h"
-
+#include "utils.h"
 
 
 /*
@@ -46,6 +46,28 @@ void free_path_list(PathNode_t *l){
         free(l->path_part);
         free(l);
     }
+}
+
+PathData_t *split_path(char *path) {
+    PathData_t *path_data = init_path_data();
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    struct ext2_inode *inode_table = get_inode_table();
+
+    char *path_part = strtok(path, "/");
+    while (path_part != NULL) {
+        char *next_path_part = strtok(path, "/");
+        if (next_path_part == NULL) {
+            // the path given is just a file name
+            path_data->file_name = malloc((sizeof(char) * strlen(path_part)) + 1);
+            strcpy(path_data->file_name, path_part);
+        } else {
+            add_path_part(path_data->path, path_part);
+        }
+        path_part = next_path_part;
+    }
+
+    return path_data;
 }
 
 PathData_t *init_path_data() {

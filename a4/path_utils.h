@@ -23,4 +23,7 @@ typedef struct path_data PathData_t;
 PathData_t *init_path_data();
 void free_path_data(PathData_t *pd);
 
+PathData_t *split_path(char *path);
+int get_parent_inode(PathData_t *path_data);
+int new_dir_exists(int parent_inode, PathData_t *path_data);
 
