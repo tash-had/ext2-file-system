@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
     char *path = argv[2];
     if (path[0] != '/'){
-        perror('Not absolute path');
+        perror("Not absolute path");
         return ENOENT;
     }
     struct ext2_group_desc *gd = get_group_desc();

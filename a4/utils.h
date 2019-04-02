@@ -3,7 +3,6 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include "ext2.h"
-#include "path_utils.h"
 
 void init_disk(char *img_name); 
 PathData_t *split_path(char *path);
