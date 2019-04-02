@@ -10,55 +10,49 @@
 #include "ext2.h"
 #include "utils.c"
 
-unsigned char *disk;
-
-
 int main(int argc, char **argv) {
     if(argc != 3) {
         fprintf(stderr, "Usage: %s <image file name> <path>\n", argv[0]);
         exit(1);
     }
-    int fd = open(argv[1], O_RDWR);
-        if(fd == -1) {
-            perror("open");
-            exit(1);
-    }
-
-    disk = mmap(NULL, 128 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if(disk == MAP_FAILED) {
-        perror("mmap");
-        exit(1);
-    }
+    init_disk(argv[1]);
 
     char *path = argv[2];
     if (path[0] != '/'){
         perror('Not absolute path');
         return ENOENT;
     }
-    struct ext2_group_desc *gd = (struct ext2_group_desc *)(disk + EXT2_BLOCK_SIZE*2);
-    struct ext2_inode *inode_table = (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE*gd->bg_inode_table);
-    int free_block = allocate_next_free(disk, BLOCK);
-    int free_inode = allocate_next_free(disk, INODE);
+    struct ext2_group_desc *gd = get_group_desc();
+    struct ext2_inode *inode_table = get_inode_table();
+
+    PathData_t *path_data = split_path(path);
+    int parent_inode = get_parent_inode(path_data);
+
+    if (new_dir_exists(parent_inode, path_data)) {
+        return EEXIST;
+    }
+
+    if (parent_inode == -1) {
+        return ENOENT;
+    }
+
+    int free_block = allocate_next_free(BLOCK);
+    int free_inode = allocate_next_free(INODE);
     if (free_block == -1 || free_inode == -1){
         perror("No space");
         return ENOSPC;
     }
-    char *curr_token = strtok(path, "\\");
-    char *next_token;
-    while (curr_token != NULL){
-        next_token = strtok(NULL, "\\");
-        //find inode of token
 
-        //if doesnt exist -> RETURN -EEXIST
-        
-        //if next_token is NULL
-            //if curr_token already exist -> RETURN "path already exists"
+    // initialize new inode
+    init_inode(EXT2_S_IFDIR, free_inode, free_block);
 
-            //else init + create dir_entry @ curr_token
-        curr_token = next_token;
-        
+    blocks_count in disk sectors
 
-    }
+    /**
+     * TODO
+     * - Free path_list (see free helper in path_utils.h)
+     * - Free path_data struct (see free helper in path_utils.h)
+     */
 
 
 }
