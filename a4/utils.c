@@ -20,11 +20,30 @@ void init_disk(char *img_name) {
 }
 
 
+struct ext2_super_block *get_super_block() {
+    return (struct ext2_super_block *)(disk + EXT2_BLOCK_SIZE);
+}
+
+struct ext2_group_desc *get_group_desc() {
+    return (struct ext2_group_desc *)(disk + EXT2_BLOCK_SIZE*2);
+}
+
+struct ext2_inode *get_inode_table() {
+    return (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE*get_group_desc()->bg_inode_table);
+}
+
+unsigned char *get_inode_map() {
+    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_inode_bitmap);
+}
+
+unsigned char *get_block_bitmap() {
+    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_block_bitmap);
+}
+
 int is_valid(unsigned char *inode_bitmap, int bit_idx){
     int mask = 1 << (bit_idx % 8);
     return inode_bitmap[bit_idx/8] & mask;
 }
-
 
 /**
  * Allocate next free block or inode in disk
@@ -44,7 +63,6 @@ int allocate_next_free(int type){
         count = sb->s_blocks_count / 8;
 
     }
-
     else {
         // Next free inode
         bitmap = (disk + EXT2_BLOCK_SIZE*gd->bg_inode_bitmap);
@@ -70,8 +88,6 @@ int allocate_next_free(int type){
     }
     return -1;
 }
-
-
 
 /**
  * Initialize an inode's default vals
@@ -130,16 +146,6 @@ PathData_t *split_path(char *path) {
     return path_data;
 }
 
-int get_alligned_dirent_len(struct ext2_dir_entry *dir_ent) {
-    int actual_rec_len = sizeof(struct ext2_dir_entry *) + dir_ent->name_len;
-    int alligned_len = actual_rec_len + 4  * (actual_rec_len / 4 + 1);
-
-    if (actual_rec_len % 4 > 0) {
-
-    }
-    return actual_rec_len;
-}
-
 /**
  *
  * @param path_data
@@ -156,7 +162,7 @@ int get_parent_inode(PathData_t *path_data) {
     if (curr_path->path_part == NULL) {
         // the path is just a filename. no need to traverse through directories, just check for duplicates
         // in t
-        return 2;
+        return EXT2_ROOT_INO; //root is the parent
     }
     for (int i = 0; i < inodes_count; i++){
         if (is_valid(get_inode_map(), i) && (i == inode_index)){
@@ -217,37 +223,29 @@ int new_dir_exists(int parent_inode, PathData_t *path_data){
     }
     return 0;
 }
-
-void init_dir_entry(unsigned char *disk, int block_num, int type, int inode_idx, char name[]){
+int get_rec_len(char *dir_ent_name){
+    if (!(strlen(dir_ent_name) % 4)){
+        return sizeof(struct ext2_dir_entry) + strlen(dir_ent_name);
+    }
+    else{
+        int new_len = 4*((strlen(dir_ent_name)/4)+1); //round up to multiple of 4
+        return sizeof(struct ext2_dir_entry) + new_len;
+    }
+}
+void init_dir_entry(int dir_block_num, int type, int inode_idx, char name[], int size){
+    struct ext2_inode *inode_table = get_inode_table();
     struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
-                                                         EXT2_BLOCK_SIZE*block_num);
-    new_dir_entry->inode = (unsigned int) (inode_idx - 1);
+                                                         EXT2_BLOCK_SIZE*dir_block_num);
+    new_dir_entry->inode = inode_idx;
     if (strlen(name) > EXT2_NAME_LEN){
         exit(1);
     }
+    new_dir_entry->rec_len = size;
     strncpy(new_dir_entry->name, name, strlen(name)); 
-    new_dir_entry->file_type = (unsigned char) type;
-    new_dir_entry->name_len = (unsigned char) strlen(name);
-    new_dir_entry->rec_len = EXT2_BLOCK_SIZE;
+    new_dir_entry->file_type = type;
+    new_dir_entry->name_len = strlen(name);
+    inode_table[inode_idx - 1].i_links_count++;
 }
 
 
-struct ext2_super_block *get_super_block() {
-    return (struct ext2_super_block *)(disk + EXT2_BLOCK_SIZE);
-}
 
-struct ext2_group_desc *get_group_desc() {
-    return (struct ext2_group_desc *)(disk + EXT2_BLOCK_SIZE*2);
-}
-
-struct ext2_inode *get_inode_table() {
-    return (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE*get_group_desc()->bg_inode_table);
-}
-
-unsigned char *get_inode_map() {
-    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_inode_bitmap);
-}
-
-unsigned char *get_block_bitmap() {
-    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_block_bitmap);
-}

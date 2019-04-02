@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
         return EEXIST;
     }
 
-    if (parent_inode == -1) {
+    if (parent_inode == -1) { //invalid path
         return ENOENT;
     }
 
@@ -45,8 +45,11 @@ int main(int argc, char **argv) {
 
     // initialize new inode
     init_inode(EXT2_S_IFDIR, free_inode, free_block);
+    int root_len = get_rec_len(".");
+    init_dir_entry(free_block, EXT2_FT_DIR, free_inode, ".", root_len); // add ./ dir
+    init_dir_entry(free_block+root_len, EXT2_FT_DIR, parent_inode, "..", EXT2_BLOCK_SIZE-root_len); // add ../ dir
+    gd->bg_used_dirs_count++;
 
-    blocks_count in disk sectors
 
     /**
      * TODO
