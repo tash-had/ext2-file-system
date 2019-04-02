@@ -9,7 +9,6 @@
 #include <errno.h>
 #include "ext2.h"
 
-unsigned char *disk;
 int main(int argc, char **argv) {
     if(argc != 3) {
         fprintf(stderr, "Usage: %s <image file name> <path>\n", argv[0]);
