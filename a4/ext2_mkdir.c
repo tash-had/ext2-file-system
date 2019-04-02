@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     }
 
     char *path = argv[2];
-    if (path[0] != '\\'){
+    if (path[0] != '/'){
         perror('Not absolute path');
         return ENOENT;
     }

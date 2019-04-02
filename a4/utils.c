@@ -82,4 +82,18 @@ void init_inode(unsigned char *disk, int type, int inode_num, int block_num){
 
 }
 
-void init_dir_entry(unsigned char *disk, int type, int inode_num, char name[]){}
+void init_dir_entry(unsigned char *disk, int dir_block_num, int type, int inode_idx, char name[]){
+    struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
+                                                         EXT2_BLOCK_SIZE*dir_block_num);
+    new_dir_entry->inode = inode_idx-1;
+    if (strlen(name) > EXT2_NAME_LEN){
+        exit(1);
+    }
+    strncpy(new_dir_entry->name, name, strlen(name)); 
+    new_dir_entry->file_type = type;
+    new_dir_entry->name_len = strlen(name);
+    new_dir_entry->rec_len = EXT2_BLOCK_SIZE;
+
+
+
+}
