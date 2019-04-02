@@ -247,5 +247,41 @@ void init_dir_entry(int dir_block_num, int type, int inode_idx, char name[], int
     inode_table[inode_idx - 1].i_links_count++;
 }
 
+int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
+    struct ext2_inode *inode_table = get_inode_table();
+    struct ext2_inode parent = inode_table[parent_inode_num-1];
+    int block_num = parent.i_block[0];
+    struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *)(disk + 
+                                                         EXT2_BLOCK_SIZE*block_num);
+    int total_len = 0;
+    int rec_len = 0;
+    int total_actual_size = 0;
+    while (total_len < EXT2_BLOCK_SIZE){
+        curr_dir_entry = (void *)curr_dir_entry + rec_len;
+        total_actual_size += get_rec_len(curr_dir_entry->name);
+        rec_len = curr_dir_entry->rec_len;
+        total_len += rec_len;
+    }
+
+    if (total_actual_size + get_rec_len(name) > EXT2_BLOCK_SIZE){
+        return 1;
+    }
+
+    int total_len = 0;
+    int rec_len = 0;
+    int actual_size;
+    while (total_len < EXT2_BLOCK_SIZE){
+        curr_dir_entry = (void *)curr_dir_entry + rec_len;
+        actual_size = get_rec_len(curr_dir_entry->name);
+        rec_len = curr_dir_entry->rec_len;
+        if (actual_size < rec_len){
+            curr_dir_entry->rec_len = actual_size;
+        }
+        total_len += rec_len;
+    }
+    init_dir_entry(total_actual_size, EXT2_FT_DIR, inode_idx, name, EXT2_BLOCK_SIZE-total_actual_size);
+    return 0;
+}
+
 
 
