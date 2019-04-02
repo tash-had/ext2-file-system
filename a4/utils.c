@@ -135,6 +135,7 @@ PathData_t *split_path(char *path) {
     while (path_part != NULL) {
         char *next_path_part = strtok(path, "/");
         if (next_path_part == NULL) {
+            // the path given is just a file name
             path_data->file_name = malloc((sizeof(char) * strlen(path_part)) + 1);
             strcpy(path_data->file_name, path_part);
         } else {
@@ -146,30 +147,43 @@ PathData_t *split_path(char *path) {
     return path_data;
 }
 
-int validate_path(PathData_t *path_data) {
+/**
+ *
+ * @param path_data
+ * @return the inode number of the *parent* of the new dir entry to be created
+ */
+int get_parent_inode(PathData_t *path_data) {
     struct ext2_super_block *sb = get_super_block();
-    struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
 
     int inodes_count = sb->s_inodes_count;
     int inode_index = 1;
+    PathNode_t *curr_path = path_data->path;
+
+    if (curr_path->path_part == NULL) {
+        // the path is just a filename. no need to traverse through directories, just check for duplicates
+        // in t
+        return 2;
+    }
     for (int i = 0; i < inodes_count; i++){
-        if (i == inode_index){
+        if (is_valid(get_inode_map(), i) && (i == inode_index)){
             struct ext2_inode curr_inode = inode_table[i];
             struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *)(disk +
                     EXT2_BLOCK_SIZE*curr_inode.i_block[0]);
 
             int traversed_len = 0;
-            PathNode_t *curr_path = path_data->path;
-            int found = 1;
+            int found = 0;
             while (traversed_len < EXT2_BLOCK_SIZE){
                 char *cur_path_part = curr_path->path_part;
-                if (strcmp(curr_dir->name, cur_path_part) == 0 &&
-                    curr_dir->inode != 0 &&
+                if (strcmp(curr_dir->name, cur_path_part) == 0 && curr_dir->inode != 0 &&
                     (curr_dir->file_type == EXT2_FT_DIR)){
                     inode_index = curr_dir->inode - 1;
+
+                    if (curr_path->next == NULL) {
+                        return curr_dir->inode;
+                    }
                     curr_path = curr_path->next;
-                    found = 0;
+                    found = 1;
                     break;
                 }
                 traversed_len += curr_dir->rec_len;
@@ -180,7 +194,35 @@ int validate_path(PathData_t *path_data) {
             }
         }
     }
+    return -1;
 
+}
+
+int new_dir_exists(int parent_inode, PathData_t *path_data){
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_inode *inode_table = get_inode_table();
+    for (int i = 0; i < sb->s_inodes_count; i++){
+        if (is_valid(get_inode_map(), i) && (i == parent_inode - 1)){
+            struct ext2_inode curr_inode = inode_table[i];
+            struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *)(disk +
+                                                                        EXT2_BLOCK_SIZE*curr_inode.i_block[0]);
+            int traversed_len = 0;
+            /**
+             * TODO
+             * Try to remove duplicate code in this (duplicate of get_parent_inode)
+             */
+            while (traversed_len < EXT2_BLOCK_SIZE){
+                if (strcmp(curr_dir->name, path_data->file_name) == 0 && curr_dir->inode != 0 &&
+                    (curr_dir->file_type == EXT2_FT_DIR)){
+                    //dir already exists, abort mission
+                    return 1;
+                }
+                traversed_len += curr_dir->rec_len;
+                curr_dir = (void *)curr_dir + curr_dir->rec_len;
+            }
+        }
+    }
+    return 0;
 }
 
 struct ext2_super_block *get_super_block() {
@@ -195,5 +237,12 @@ struct ext2_inode *get_inode_table() {
     return (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE*get_group_desc()->bg_inode_table);
 }
 
+unsigned char *get_inode_map() {
+    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_inode_bitmap);
+}
+
+unsigned char *get_block_bitmap() {
+    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_block_bitmap);
+}
 
 

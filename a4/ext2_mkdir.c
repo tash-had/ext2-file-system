@@ -24,28 +24,25 @@ int main(int argc, char **argv) {
     }
     struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
-    int free_block = allocate_next_free(disk, BLOCK);
-    int free_inode = allocate_next_free(disk, INODE);
+
+    PathData_t *path_data = split_path(path);
+    int parent_inode = get_parent_inode(path_data);
+
+    if (new_dir_exists(parent_inode, path_data)) {
+        return EEXIST;
+    }
+
+    if (parent_inode == -1) {
+        return ENOENT;
+    }
+
+    int free_block = allocate_next_free(BLOCK);
+    int free_inode = allocate_next_free(INODE);
     if (free_block == -1 || free_inode == -1){
         perror("No space");
         return ENOSPC;
     }
-    char *curr_token = strtok(path, "\\");
-    char *next_token;
-    while (curr_token != NULL){
-        next_token = strtok(NULL, "\\");
-        //find inode of token
 
-        //if doesnt exist -> RETURN -EEXIST
-        
-        //if next_token is NULL
-            //if curr_token already exist -> RETURN "path already exists"
-
-            //else init + create dir_entry @ curr_token
-        curr_token = next_token;
-        
-
-    }
 
     /**
      * TODO
