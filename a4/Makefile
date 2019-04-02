@@ -1,5 +1,5 @@
 
-ext2_mkdir : ext2_mkdir.o common.h utils.h path_utils.h
+ext2_mkdir : ext2_mkdir.o utils.o path_utils.o
 	gcc -Wall -g -o ext2_mkdir $^
 
 *.o : *.c *.h
