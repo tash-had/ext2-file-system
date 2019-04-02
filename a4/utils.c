@@ -44,6 +44,7 @@ int allocate_next_free(int type){
         count = sb->s_blocks_count / 8;
 
     }
+
     else {
         // Next free inode
         bitmap = (disk + EXT2_BLOCK_SIZE*gd->bg_inode_bitmap);
@@ -69,6 +70,8 @@ int allocate_next_free(int type){
     }
     return -1;
 }
+
+
 
 /**
  * Initialize an inode's default vals
@@ -125,6 +128,16 @@ PathData_t *split_path(char *path) {
     }
 
     return path_data;
+}
+
+int get_alligned_dirent_len(struct ext2_dir_entry *dir_ent) {
+    int actual_rec_len = sizeof(struct ext2_dir_entry *) + dir_ent->name_len;
+    int alligned_len = actual_rec_len + 4  * (actual_rec_len / 4 + 1);
+
+    if (actual_rec_len % 4 > 0) {
+
+    }
+    return actual_rec_len;
 }
 
 /**
@@ -205,23 +218,18 @@ int new_dir_exists(int parent_inode, PathData_t *path_data){
     return 0;
 }
 
-<<<<<<< HEAD
-void init_dir_entry(unsigned char *disk, int dir_block_num, int type, int inode_idx, char name[]){
+void init_dir_entry(unsigned char *disk, int block_num, int type, int inode_idx, char name[]){
     struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
-                                                         EXT2_BLOCK_SIZE*dir_block_num);
-    new_dir_entry->inode = inode_idx-1;
+                                                         EXT2_BLOCK_SIZE*block_num);
+    new_dir_entry->inode = (unsigned int) (inode_idx - 1);
     if (strlen(name) > EXT2_NAME_LEN){
         exit(1);
     }
     strncpy(new_dir_entry->name, name, strlen(name)); 
-    new_dir_entry->file_type = type;
-    new_dir_entry->name_len = strlen(name);
+    new_dir_entry->file_type = (unsigned char) type;
+    new_dir_entry->name_len = (unsigned char) strlen(name);
     new_dir_entry->rec_len = EXT2_BLOCK_SIZE;
-
-
-
 }
-=======
 
 
 struct ext2_super_block *get_super_block() {
@@ -243,6 +251,3 @@ unsigned char *get_inode_map() {
 unsigned char *get_block_bitmap() {
     return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_block_bitmap);
 }
-
-
->>>>>>> e1c49e4b02d8d9e754f3b028edf22db1028a6538
