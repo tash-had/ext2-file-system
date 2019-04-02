@@ -43,6 +43,10 @@ int main(int argc, char **argv) {
         return ENOSPC;
     }
 
+    // initialize new inode
+    init_inode(EXT2_S_IFDIR, free_inode, free_block);
+
+    blocks_count in disk sectors
 
     /**
      * TODO

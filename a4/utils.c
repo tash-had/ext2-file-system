@@ -88,7 +88,7 @@ void init_inode(int type, int inode_idx, int block_num){
     new_inode.i_size = EXT2_BLOCK_SIZE;
     new_inode.i_gid = 0;
     new_inode.i_links_count = 1;
-    new_inode.i_blocks = 0;
+    new_inode.i_blocks = 2;
     new_inode.osd1 = 0;
     for (int i = 0; i < 15; i++){
         new_inode.i_block[i] = 0;
@@ -103,26 +103,6 @@ void init_inode(int type, int inode_idx, int block_num){
     }
 
     inode_table[inode_idx-1] = new_inode;
-}
-
-struct ext2_dir_entry *get_root_dir(){
-    struct ext2_super_block *sb = get_super_block();
-    struct ext2_group_desc *gd = get_group_desc();
-    struct ext2_inode *inode_table = get_inode_table();
-
-    for (int i = 0; i < sb->s_inodes_count; i++){
-        if (i == 1){
-            struct ext2_inode curr_inode = inode_table[i];
-            if (curr_inode.i_mode & EXT2_S_IFDIR){
-                unsigned int *block_ptrs = curr_inode.i_block;
-                int dir_block_num = block_ptrs[0];
-                return (struct ext2_dir_entry *)(disk + EXT2_BLOCK_SIZE*dir_block_num);
-            }
-        }
-    }
-
-    return NULL;
-
 }
 
 PathData_t *split_path(char *path) {
@@ -224,6 +204,8 @@ int new_dir_exists(int parent_inode, PathData_t *path_data){
     }
     return 0;
 }
+
+
 
 struct ext2_super_block *get_super_block() {
     return (struct ext2_super_block *)(disk + EXT2_BLOCK_SIZE);
