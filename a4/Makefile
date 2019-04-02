@@ -1,9 +1,10 @@
 
-ext2_mkdir :  ext2_mkdir.o
-	gcc -Wall -g -o sim $^
+ext2_mkdir : ext2_mkdir.o common.h utils.h
+	gcc -Wall -g -o ext2_mkdir $^
 
-%.o : %.c pagetable.h sim.h
+*.o : *.c *.h
 	gcc -Wall -g -c $<
 
 clean :
-	rm -f *.o *~
+	rm -f *.o ext2_* *~
+
