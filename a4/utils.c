@@ -243,8 +243,8 @@ int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
         return 1;
     }
 
-    int total_len = 0;
-    int rec_len = 0;
+    total_len = 0;
+    rec_len = 0;
     int actual_size;
     while (total_len < EXT2_BLOCK_SIZE){
         curr_dir_entry = (void *)curr_dir_entry + rec_len;
