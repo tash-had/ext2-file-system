@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     init_dir_entry(free_block, root_len, EXT2_FT_DIR, parent_inode-1, "..", EXT2_BLOCK_SIZE-root_len); // add ../ dir
     int ret = add_dir_to_parent(parent_inode, free_inode, path_data->file_name);
     if (ret){
-        return ENOSPC;0
+        return ENOSPC;
     }
     gd->bg_used_dirs_count++;
 
