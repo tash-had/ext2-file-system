@@ -46,12 +46,6 @@ int main(int argc, char **argv) {
     init_dir_entry(free_block, root_len, EXT2_FT_DIR, parent_inode, "..", EXT2_BLOCK_SIZE-root_len); // add ../ dir
     gd->bg_used_dirs_count++;
 
-
-    /**
-     * TODO
-     * - Free path_list (see free helper in path_utils.h)
-     * - Free path_data struct (see free helper in path_utils.h)
-     */
-
+    free_path_data(path_data);
 
 }
