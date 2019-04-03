@@ -17,9 +17,18 @@ void init_disk(char *img_name) {
     }
 }
 
+void check_valid(void *ext2_struct, char *item) {
+    if (ext2_struct == NULL || !ext2_struct) {
+        fprintf(stderr, "Trouble initializing %s.", item);
+        exit(1);
+    }
+}
 
 struct ext2_super_block *get_super_block() {
-    return (struct ext2_super_block *)(disk + EXT2_BLOCK_SIZE);
+    check_valid(disk, "disk");
+    struct ext2_super_block *sb = (struct ext2_super_block *)(disk + EXT2_BLOCK_SIZE);
+    check_valid(disk, "super block");
+    return sb;
 }
 
 struct ext2_group_desc *get_group_desc() {
@@ -175,6 +184,21 @@ int get_parent_inode(PathData_t *path_data) {
 
 }
 
+struct ext2_inode *get_inode_with_idx(unsigned int idx) {
+    int inode_num = idx - 1;
+
+    if (idx > get_super_block()->s_inodes_count || idx < get_super_block()->s_first_ino) {
+
+    }
+    return (struct ext2_inode *)((disk + (idx * EXT2_BLOCK_SIZE)) + get_super_block()->s_inode_size * (inode_num));
+}
+
+struct ext2_inode *allocate_inode_dir(unsigned int parent_inode_num, unsigned int i_blocks, unsigned short i_mode) {
+    struct ext2_inode *new_inode;
+}
+
+
+
 int new_dir_exists(int parent_inode, PathData_t *path_data){
     struct ext2_super_block *sb = get_super_block();
     struct ext2_inode *inode_table = get_inode_table();
@@ -231,7 +255,7 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_idx, cha
 int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_inode parent = inode_table[parent_inode_num-1];
-    int block_num = parent.i_block[0];
+    unsigned int block_num = parent.i_block[0];
     struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *)(disk + 
                                                          EXT2_BLOCK_SIZE*block_num);
     int total_len = 0;
@@ -251,6 +275,8 @@ int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
     total_len = 0;
     rec_len = 0;
     int actual_size;
+
+    curr_dir_entry = (struct ext2_dir_entry *)(disk + EXT2_BLOCK_SIZE*block_num);
     while (total_len < EXT2_BLOCK_SIZE){
         curr_dir_entry = (void *)curr_dir_entry + rec_len;
         actual_size = get_rec_len(curr_dir_entry->name);
