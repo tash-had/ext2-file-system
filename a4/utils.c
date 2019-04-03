@@ -147,8 +147,10 @@ int get_parent_inode(PathData_t *path_data) {
                     EXT2_BLOCK_SIZE*curr_inode.i_block[0]);
 
             int traversed_len = 0;
+            int rec_len = 0;
             int found = 0;
             while (traversed_len < EXT2_BLOCK_SIZE){
+                curr_dir = (void *)curr_dir + rec_len;
                 char *cur_path_part = curr_path->path_part;
                 if (strcmp(curr_dir->name, cur_path_part) == 0 && curr_dir->inode != 0 &&
                     (curr_dir->file_type == EXT2_FT_DIR)){
@@ -161,8 +163,8 @@ int get_parent_inode(PathData_t *path_data) {
                     found = 1;
                     break;
                 }
-                traversed_len += curr_dir->rec_len;
-                curr_dir = (void *)curr_dir + curr_dir->rec_len;
+                rec_len = curr_dir->rec_len;
+                traversed_len += rec_len;
             }
             if (!found){
                 return -1;
@@ -182,18 +184,21 @@ int new_dir_exists(int parent_inode, PathData_t *path_data){
             struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *)(disk +
                                                                         EXT2_BLOCK_SIZE*curr_inode.i_block[0]);
             int traversed_len = 0;
+            int rec_len = 0;
             /**
              * TODO
              * Try to remove duplicate code in this (duplicate of get_parent_inode)
              */
             while (traversed_len < EXT2_BLOCK_SIZE){
+                curr_dir = (void *)curr_dir + rec_len;
                 if (strcmp(curr_dir->name, path_data->file_name) == 0 && curr_dir->inode != 0 &&
                     (curr_dir->file_type == EXT2_FT_DIR)){
                     //dir already exists, abort mission
                     return 1;
                 }
-                traversed_len += curr_dir->rec_len;
-                curr_dir = (void *)curr_dir + curr_dir->rec_len;
+                rec_len = curr_dir->rec_len;
+                traversed_len += rec_len;
+                
             }
         }
     }
