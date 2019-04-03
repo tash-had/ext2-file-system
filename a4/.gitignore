@@ -3,3 +3,4 @@ CMakeLists.txt
 .vscode/
 cmake-build-debug/
 readimage.*
+*.o
