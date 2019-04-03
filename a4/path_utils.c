@@ -14,18 +14,16 @@ PathNode_t *init_path_node(){
 }
 
 
-/*
-* Given an char, c, and a CharList, l, add c to l.
-*/
+
 void add_path_part(PathNode_t *l, char *str){
     struct path_node *cur = l;
-    while (cur->next != NULL) {
+    while (cur->path_part != NULL) {
         cur = cur->next;
     }
     cur->next = init_path_node();
-    cur->next->path_part = malloc((sizeof(char) * strlen(str)) + 1);
-    check_malloc(cur->next->path_part);
-    strcpy(cur->next->path_part, str);
+    cur->path_part = malloc((sizeof(char) * strlen(str)) + 1);
+    check_malloc(cur->path_part);
+    strcpy(cur->path_part, str);
 }
 
 /*

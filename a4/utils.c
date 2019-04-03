@@ -147,7 +147,7 @@ int get_parent_inode(PathData_t *path_data) {
     int inode_index = 1;
     PathNode_t *curr_path = path_data->path;
 
-    if (curr_path->path_part == NULL) {
+    if (curr_path->next == NULL) {
         // the path is just a filename. no need to traverse through directories, just check for duplicates
         // in t
         return EXT2_ROOT_INO; //root is the parent
@@ -168,7 +168,7 @@ int get_parent_inode(PathData_t *path_data) {
                     (curr_dir->file_type == EXT2_FT_DIR)){
                     inode_index = curr_dir->inode - 1;
 
-                    if (curr_path->next == NULL) {
+                    if (curr_path->next->path_part == NULL) {
                         return curr_dir->inode;
                     }
                     curr_path = curr_path->next;
