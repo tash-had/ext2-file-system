@@ -256,7 +256,7 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, cha
     inode_table[inode_num - 1].i_links_count++;
 }
 
-int add_dir_to_parent(int parent_inode_num, int inode_num, char name[]){
+int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int type){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_inode parent = inode_table[parent_inode_num-1];
     unsigned int block_num = parent.i_block[0];
@@ -290,7 +290,7 @@ int add_dir_to_parent(int parent_inode_num, int inode_num, char name[]){
         }
         total_len += rec_len;
     }
-    init_dir_entry(block_num, total_actual_size, EXT2_FT_DIR, inode_num, name, EXT2_BLOCK_SIZE-total_actual_size);
+    init_dir_entry(block_num, total_actual_size, type, inode_num, name, EXT2_BLOCK_SIZE-total_actual_size);
     return 0;
 }
 
