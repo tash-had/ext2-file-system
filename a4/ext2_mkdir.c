@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     PathData_t *path_data = split_path(path);
     int parent_inode = get_parent_inode(path_data);
 
-    if (new_dir_exists(parent_inode, path_data)) {
+    if (new_file_exists(parent_inode, path_data, EXT2_FT_DIR)) {
         return EEXIST;
     }
 

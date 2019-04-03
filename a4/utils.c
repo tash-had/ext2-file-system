@@ -203,7 +203,7 @@ struct ext2_inode *allocate_inode_dir(unsigned int parent_inode_num, unsigned in
 
 
 
-int new_dir_exists(int parent_inode, PathData_t *path_data){
+int new_file_exists(int parent_inode, PathData_t *path_data, int type){
     struct ext2_super_block *sb = get_super_block();
     struct ext2_inode *inode_table = get_inode_table();
     for (int i = 0; i < sb->s_inodes_count; i++){
@@ -220,7 +220,7 @@ int new_dir_exists(int parent_inode, PathData_t *path_data){
             while (traversed_len < EXT2_BLOCK_SIZE){
                 curr_dir = (void *)curr_dir + rec_len;
                 if (strcmp(curr_dir->name, path_data->file_name) == 0 && curr_dir->inode != 0 &&
-                    (curr_dir->file_type == EXT2_FT_DIR)){
+                    (curr_dir->file_type == type)){
                     //dir already exists, abort mission
                     return 1;
                 }

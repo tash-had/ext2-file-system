@@ -25,5 +25,5 @@ void free_path_data(PathData_t *pd);
 
 PathData_t *split_path(char *path);
 int get_parent_inode(PathData_t *path_data);
-int new_dir_exists(int parent_inode, PathData_t *path_data);
+int new_file_exists(int parent_inode, PathData_t *path_data);
 
