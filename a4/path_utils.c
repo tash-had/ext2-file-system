@@ -56,7 +56,7 @@ PathData_t *split_path(char *path) {
 
     char *path_part = strtok(path, "/");
     while (path_part != NULL) {
-        char *next_path_part = strtok(path, "/");
+        char *next_path_part = strtok(NULL, "/");
         if (next_path_part == NULL) {
             // the path given is just a file name
             path_data->file_name = malloc((sizeof(char) * strlen(path_part)) + 1);
