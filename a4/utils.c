@@ -57,13 +57,13 @@ int allocate_next_free(int type){
     int count;
     if (type & BLOCK){
         // next free block
-        bitmap = (disk + EXT2_BLOCK_SIZE*gd->bg_block_bitmap);
+        bitmap = (unsigned char *)(disk + EXT2_BLOCK_SIZE*gd->bg_block_bitmap);
         count = sb->s_blocks_count / 8;
 
     }
     else {
         // Next free inode
-        bitmap = (disk + EXT2_BLOCK_SIZE*gd->bg_inode_bitmap);
+        bitmap = (unsigned char *)(disk + EXT2_BLOCK_SIZE*gd->bg_inode_bitmap);
         count = sb->s_inodes_count / 8;
 
     }
@@ -260,7 +260,7 @@ int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
         }
         total_len += rec_len;
     }
-    init_dir_entry(total_actual_size, EXT2_FT_DIR, inode_idx, name, EXT2_BLOCK_SIZE-total_actual_size);
+    init_dir_entry(block_num + total_actual_size, EXT2_FT_DIR, inode_idx-1, name, EXT2_BLOCK_SIZE-total_actual_size);
     return 0;
 }
 
