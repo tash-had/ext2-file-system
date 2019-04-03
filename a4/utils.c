@@ -213,10 +213,10 @@ int get_rec_len(char *dir_ent_name){
         return sizeof(struct ext2_dir_entry) + new_len;
     }
 }
-void init_dir_entry(int dir_block_num, int type, int inode_idx, char name[], int size){
+void init_dir_entry(int dir_block_num, int offset,  int type, int inode_idx, char name[], int size){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
-                                                         EXT2_BLOCK_SIZE*dir_block_num);
+                                                         EXT2_BLOCK_SIZE*dir_block_num + offset);
     new_dir_entry->inode = inode_idx;
     if (strlen(name) > EXT2_NAME_LEN){
         exit(1);
@@ -260,7 +260,7 @@ int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
         }
         total_len += rec_len;
     }
-    init_dir_entry(block_num + total_actual_size, EXT2_FT_DIR, inode_idx-1, name, EXT2_BLOCK_SIZE-total_actual_size);
+    init_dir_entry(block_num, total_actual_size, EXT2_FT_DIR, inode_idx-1, name, EXT2_BLOCK_SIZE-total_actual_size);
     return 0;
 }
 
