@@ -80,7 +80,7 @@ int allocate_next_free(int type){
     for (int i= 0; i < count; i++){
         for (int j = 0; j < 8; j++){
 
-            printf(" %d ", (bitmap[i] >> j) & 1 );
+//            printf(" %d ", (bitmap[i] >> j) & 1 );
             if (!((bitmap[i] >> j) & 1)){
                 bitmap[i] |= 1<<j;
                 if (type == BLOCK){
@@ -91,8 +91,8 @@ int allocate_next_free(int type){
                     gd->bg_free_inodes_count--;
                     sb->s_free_inodes_count--;
                 }
-                //returns index not NUMBER
-                return (i*8)+j;
+                //returns INODE NUMBER and BLOCK NUMBER
+                return (i*8)+j + 1;
             }
         }
     }
@@ -107,7 +107,7 @@ int allocate_next_free(int type){
  * @param inode_num
  * @param block_num
  */
-void init_inode(int type, int inode_idx, int block_num){
+void init_inode(int type, int inode_num, int block_num){
     struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_inode new_inode;
@@ -131,7 +131,7 @@ void init_inode(int type, int inode_idx, int block_num){
         new_inode.extra[i] = 0;
     }
 
-    inode_table[inode_idx+1] = new_inode;
+    inode_table[inode_num-1] = new_inode;
 }
 
 /**
@@ -241,11 +241,11 @@ int get_rec_len(char *dir_ent_name){
         return sizeof(struct ext2_dir_entry) + new_len;
     }
 }
-void init_dir_entry(int dir_block_num, int offset,  int type, int inode_idx, char name[], int size){
+void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, char name[], int size){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
                                                          EXT2_BLOCK_SIZE*dir_block_num + offset);
-    new_dir_entry->inode = inode_idx + 1;
+    new_dir_entry->inode = inode_num;
     if (strlen(name) > EXT2_NAME_LEN){
         exit(1);
     }
@@ -253,10 +253,10 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_idx, cha
     strncpy(new_dir_entry->name, name, strlen(name)); 
     new_dir_entry->file_type = type;
     new_dir_entry->name_len = strlen(name);
-    inode_table[inode_idx + 1].i_links_count++;
+    inode_table[inode_num - 1].i_links_count++;
 }
 
-int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
+int add_dir_to_parent(int parent_inode_num, int inode_num, char name[]){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_inode parent = inode_table[parent_inode_num-1];
     unsigned int block_num = parent.i_block[0];
@@ -290,7 +290,7 @@ int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]){
         }
         total_len += rec_len;
     }
-    init_dir_entry(block_num, total_actual_size, EXT2_FT_DIR, inode_idx, name, EXT2_BLOCK_SIZE-total_actual_size);
+    init_dir_entry(block_num, total_actual_size, EXT2_FT_DIR, inode_num, name, EXT2_BLOCK_SIZE-total_actual_size);
     return 0;
 }
 

@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
         return ENOSPC;
     }
     init_dir_entry(free_block, 0, EXT2_FT_DIR, free_inode, ".", root_len); // add ./ dir
-    init_dir_entry(free_block, root_len, EXT2_FT_DIR, parent_inode-1, "..", EXT2_BLOCK_SIZE-root_len); // add ../ dir
+    init_dir_entry(free_block, root_len, EXT2_FT_DIR, parent_inode, "..", EXT2_BLOCK_SIZE-root_len); // add ../ dir
     gd->bg_used_dirs_count++;
 
 
