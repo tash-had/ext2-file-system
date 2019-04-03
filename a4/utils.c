@@ -18,7 +18,7 @@ void init_disk(char *img_name) {
 }
 
 void check_valid(void *ext2_struct, char *item) {
-    if (ext2_struct == NULL || !ext2_struct) {
+    if (!ext2_struct || ext2_struct == NULL) {
         fprintf(stderr, "Trouble initializing %s.", item);
         exit(1);
     }
@@ -64,7 +64,7 @@ int allocate_next_free(int type){
     struct ext2_group_desc *gd = get_group_desc();
     unsigned char *bitmap;
     int count;
-    if (type & BLOCK){
+    if (type == BLOCK){
         // next free block
         bitmap = get_block_bitmap();
         count = sb->s_blocks_count / 8;
@@ -76,11 +76,14 @@ int allocate_next_free(int type){
         count = sb->s_inodes_count / 8;
 
     }
+
     for (int i= 0; i < count; i++){
         for (int j = 0; j < 8; j++){
+
+            printf(" %d ", (bitmap[i] >> j) & 1 );
             if (!((bitmap[i] >> j) & 1)){
                 bitmap[i] |= 1<<j;
-                if (type & BLOCK){
+                if (type == BLOCK){
                     gd->bg_free_blocks_count--;
                     sb->s_free_blocks_count--;
                 }
@@ -195,6 +198,7 @@ struct ext2_inode *get_inode_with_idx(unsigned int idx) {
 
 struct ext2_inode *allocate_inode_dir(unsigned int parent_inode_num, unsigned int i_blocks, unsigned short i_mode) {
     struct ext2_inode *new_inode;
+    return NULL;
 }
 
 

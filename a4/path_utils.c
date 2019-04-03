@@ -50,9 +50,6 @@ void free_path_list(PathNode_t *l){
 
 PathData_t *split_path(char *path) {
     PathData_t *path_data = init_path_data();
-    struct ext2_super_block *sb = get_super_block();
-    struct ext2_group_desc *gd = get_group_desc();
-    struct ext2_inode *inode_table = get_inode_table();
 
     char *path_part = strtok(path, "/");
     while (path_part != NULL) {
