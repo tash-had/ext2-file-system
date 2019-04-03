@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
     if (parent_inode == -1) { //invalid path
         return ENOENT;
     }
-
-    int free_block = allocate_next_free(BLOCK);
+    //index
+    int free_block = allocate_next_free(BLOCK); 
     int free_inode = allocate_next_free(INODE);
     if (free_block == -1 || free_inode == -1){
         perror("No space");
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     init_dir_entry(free_block, root_len, EXT2_FT_DIR, parent_inode, "..", EXT2_BLOCK_SIZE-root_len); // add ../ dir
     int ret = add_dir_to_parent(parent_inode, free_inode, path_data->file_name);
     if (ret){
-        return ENOSPC;
+        return ENOSPC;0
     }
     gd->bg_used_dirs_count++;
 
