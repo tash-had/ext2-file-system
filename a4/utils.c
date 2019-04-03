@@ -134,7 +134,7 @@ void init_inode(int type, int inode_num, int block_num){
     inode_table[inode_num-1] = new_inode;
 }
 
-/**
+/**Returns inode num of parent inode
  *
  * @param path_data
  * @return the inode number of the *parent* of the new dir entry to be created
@@ -196,13 +196,8 @@ struct ext2_inode *get_inode_with_idx(unsigned int idx) {
     return (struct ext2_inode *)((disk + (idx * EXT2_BLOCK_SIZE)) + get_super_block()->s_inode_size * (inode_num));
 }
 
-struct ext2_inode *allocate_inode_dir(unsigned int parent_inode_num, unsigned int i_blocks, unsigned short i_mode) {
-    struct ext2_inode *new_inode;
-    return NULL;
-}
 
-
-
+//check if file to be made exists
 int new_file_exists(int parent_inode, PathData_t *path_data, int type){
     struct ext2_super_block *sb = get_super_block();
     struct ext2_inode *inode_table = get_inode_table();
@@ -241,6 +236,8 @@ int get_rec_len(char *dir_ent_name){
         return sizeof(struct ext2_dir_entry) + new_len;
     }
 }
+
+//initializes dir entry
 void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, char name[], int size){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
@@ -256,6 +253,7 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, cha
     inode_table[inode_num - 1].i_links_count++;
 }
 
+//adds new file to parent dir, adjust rec len of prev dir entry
 int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int type){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_inode parent = inode_table[parent_inode_num-1];
