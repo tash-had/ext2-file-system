@@ -57,13 +57,13 @@ int allocate_next_free(int type){
     int count;
     if (type & BLOCK){
         // next free block
-        bitmap = (unsigned char *)(disk + EXT2_BLOCK_SIZE*gd->bg_block_bitmap);
+        bitmap = get_block_bitmap();
         count = sb->s_blocks_count / 8;
 
     }
     else {
         // Next free inode
-        bitmap = (unsigned char *)(disk + EXT2_BLOCK_SIZE*gd->bg_inode_bitmap);
+        bitmap = get_inode_map();
         count = sb->s_inodes_count / 8;
 
     }
