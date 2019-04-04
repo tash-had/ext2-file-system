@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     // initialize new inode
     init_inode(EXT2_S_IFDIR, free_inode, free_block);
     int root_len = get_rec_len(".");
-    int ret = add_dir_to_parent(parent_inode, free_inode, path_data->file_name);
+    int ret = add_file_to_parent(parent_inode, free_inode, path_data->file_name, EXT2_FT_DIR);
     if (ret){
         return ENOSPC;
     }

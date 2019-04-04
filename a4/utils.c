@@ -135,7 +135,7 @@ void init_inode(int type, int inode_num, int block_num){
     inode_table[inode_num-1] = new_inode;
 }
 
-/**
+/**Returns inode num of parent inode
  *
  * @param path_data
  * @return the inode number of the *parent* of the new dir entry to be created
@@ -197,12 +197,8 @@ struct ext2_inode *get_inode(unsigned int inode_number) {
     return (struct ext2_inode *)((disk + (inode_idx * EXT2_BLOCK_SIZE)) + get_super_block()->s_inode_size * (inode_number));
 }
 
-struct ext2_inode *allocate_inode_dir(unsigned int parent_inode_num, unsigned int i_blocks, unsigned short i_mode) {
-    struct ext2_inode *new_inode;
-    return NULL;
-}
 
-
+//check if file to be made exists
 int new_file_exists(int parent_inode, PathData_t *path_data, int type){
     struct ext2_super_block *sb = get_super_block();
     struct ext2_inode *inode_table = get_inode_table();
@@ -243,6 +239,7 @@ int get_rec_len(char *dir_ent_name){
     }
 }
 
+//initializes dir entry
 void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, char name[], int size){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
@@ -258,8 +255,8 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, cha
     inode_table[inode_num - 1].i_links_count++;
 }
 
-
-int add_dir_to_parent(int parent_inode_num, int inode_num, char name[]){
+//adds new file to parent dir, adjust rec len of prev dir entry
+int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int type){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_inode *parent = get_inode(parent_inode_num);
     unsigned int block_num = parent->i_block[0];
@@ -293,7 +290,7 @@ int add_dir_to_parent(int parent_inode_num, int inode_num, char name[]){
         }
         total_len += rec_len;
     }
-    init_dir_entry(block_num, total_actual_size, EXT2_FT_DIR, inode_num, name, EXT2_BLOCK_SIZE-total_actual_size);
+    init_dir_entry(block_num, total_actual_size, type, inode_num, name, EXT2_BLOCK_SIZE-total_actual_size);
     return 0;
 }
 
