@@ -188,15 +188,16 @@ int get_parent_inode(PathData_t *path_data) {
 
 }
 
-struct ext2_inode *get_inode(unsigned int inode_number) {
-    int inode_idx = inode_number + 1;
-
-    if (inode_idx > get_super_block()->s_inodes_count || inode_idx < get_super_block()->s_first_ino) {
-        fprintf(stderr, "error: invalid inode index");
-    }
-    return (struct ext2_inode *)((disk + (inode_idx * EXT2_BLOCK_SIZE)) + get_super_block()->s_inode_size * (inode_number));
-}
-
+//struct ext2_inode *get_inode(unsigned int inode_number) {
+//    int inode_idx = inode_number + 1;
+//
+//    if (inode_idx > get_super_block()->s_inodes_count ||
+//    (inode_idx < get_super_block()->s_first_ino && inode_idx != EXT2_ROOT_INO)) {
+//        fprintf(stderr, "error: invalid inode index");
+//    }
+//    return (struct ext2_inode *)((disk + (inode_idx * EXT2_BLOCK_SIZE)) + get_super_block()->s_inode_size * (inode_number));
+//}
+//
 
 //check if file to be made exists
 int new_file_exists(int parent_inode, PathData_t *path_data, int type){
@@ -258,7 +259,8 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, cha
 //adds new file to parent dir, adjust rec len of prev dir entry
 int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int type){
     struct ext2_inode *inode_table = get_inode_table();
-    struct ext2_inode *parent = get_inode(parent_inode_num);
+//    struct ext2_inode *parent = get_inode(parent_inode_num);
+    struct ext2_inode *parent = &inode_table[parent_inode_num-1];
     unsigned int block_num = parent->i_block[0];
     struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *)(disk + 
                                                          EXT2_BLOCK_SIZE*block_num);

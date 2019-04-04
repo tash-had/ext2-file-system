@@ -49,6 +49,9 @@ void free_path_list(PathNode_t *l){
 PathData_t *split_path(char *path) {
     PathData_t *path_data = init_path_data();
 
+    if (strcmp(path, "/") == 0) {
+
+    }
     char *path_part = strtok(path, "/");
     while (path_part != NULL) {
         char *next_path_part = strtok(NULL, "/");
