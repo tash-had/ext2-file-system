@@ -4,3 +4,5 @@ CMakeLists.txt
 cmake-build-debug/
 readimage.*
 *.o
+ext2_ls
+ext2_mkdir

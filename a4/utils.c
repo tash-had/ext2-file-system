@@ -15,11 +15,12 @@ void init_disk(char *img_name) {
         perror("mmap");
         exit(1);
     }
+    check_valid(disk, "disk");
 }
 
-void check_valid(void *ext2_struct, char *item) {
+void check_valid(void *ext2_struct, char *struct_description) {
     if (!ext2_struct || ext2_struct == NULL) {
-        fprintf(stderr, "Trouble initializing %s.", item);
+        fprintf(stderr, "Trouble initializing %s.", struct_description);
         exit(1);
     }
 }
@@ -187,20 +188,19 @@ int get_parent_inode(PathData_t *path_data) {
 
 }
 
-struct ext2_inode *get_inode_with_idx(unsigned int idx) {
-    int inode_num = idx - 1;
+struct ext2_inode *get_inode(unsigned int inode_number) {
+    int inode_idx = inode_number + 1;
 
-    if (idx > get_super_block()->s_inodes_count || idx < get_super_block()->s_first_ino) {
-
+    if (inode_idx > get_super_block()->s_inodes_count || inode_idx < get_super_block()->s_first_ino) {
+        fprintf(stderr, "error: invalid inode index");
     }
-    return (struct ext2_inode *)((disk + (idx * EXT2_BLOCK_SIZE)) + get_super_block()->s_inode_size * (inode_num));
+    return (struct ext2_inode *)((disk + (inode_idx * EXT2_BLOCK_SIZE)) + get_super_block()->s_inode_size * (inode_number));
 }
 
 struct ext2_inode *allocate_inode_dir(unsigned int parent_inode_num, unsigned int i_blocks, unsigned short i_mode) {
     struct ext2_inode *new_inode;
     return NULL;
 }
-
 
 
 int new_file_exists(int parent_inode, PathData_t *path_data, int type){
@@ -232,6 +232,7 @@ int new_file_exists(int parent_inode, PathData_t *path_data, int type){
     }
     return 0;
 }
+
 int get_rec_len(char *dir_ent_name){
     if (!(strlen(dir_ent_name) % 4)){
         return sizeof(struct ext2_dir_entry) + strlen(dir_ent_name);
@@ -241,6 +242,7 @@ int get_rec_len(char *dir_ent_name){
         return sizeof(struct ext2_dir_entry) + new_len;
     }
 }
+
 void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, char name[], int size){
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_dir_entry *new_dir_entry = (struct ext2_dir_entry *)(disk + 
@@ -256,10 +258,11 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, cha
     inode_table[inode_num - 1].i_links_count++;
 }
 
+
 int add_dir_to_parent(int parent_inode_num, int inode_num, char name[]){
     struct ext2_inode *inode_table = get_inode_table();
-    struct ext2_inode parent = inode_table[parent_inode_num-1];
-    unsigned int block_num = parent.i_block[0];
+    struct ext2_inode *parent = get_inode(parent_inode_num);
+    unsigned int block_num = parent->i_block[0];
     struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *)(disk + 
                                                          EXT2_BLOCK_SIZE*block_num);
     int total_len = 0;

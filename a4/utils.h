@@ -17,3 +17,5 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_idx, cha
 int add_dir_to_parent(int parent_inode_num, int inode_idx, char name[]);
 int allocate_next_free(int type);
 void init_inode(int type, int inode_idx, int block_num);
+void check_valid(void *ext2_struct, char *item);
+struct ext2_inode *get_inode(unsigned int inode_number);

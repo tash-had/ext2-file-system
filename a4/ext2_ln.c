@@ -1,5 +1,6 @@
 #include "common.h"
 #include "utils.h"
+#include "path_utils.h"
 
 int main(int argc, char **argv) {
     if(argc != 4) {
@@ -8,7 +9,15 @@ int main(int argc, char **argv) {
     }
     init_disk(argv[1]);
 
+
+
+
     char *src_path = argv[2];
     char *dest_path = argv[2];
-    
+
+    PathData_t *src = split_path(src_path);
+    PathData_t *dst = split_path(dest_path);
+
+
+
 }
