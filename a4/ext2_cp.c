@@ -29,8 +29,6 @@ int main(int argc, char **argv) {
     PathData_t *dest_path_data = split_path(dest_path, src_file_name);
     int dest_parent_inode = get_parent_inode(dest_path_data);
 
-
-
     if (new_file_exists(dest_parent_inode, dest_path_data, EXT2_FT_REG_FILE)) {
         return EEXIST;
     }
