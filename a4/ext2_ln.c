@@ -15,8 +15,8 @@ int main(int argc, char **argv) {
     char *src_path = argv[2];
     char *dest_path = argv[2];
 
-    PathData_t *src = split_path(src_path);
-    PathData_t *dst = split_path(dest_path);
+    PathData_t *src = split_path(src_path, NULL);
+    PathData_t *dst = split_path(dest_path, NULL);
 
 
 

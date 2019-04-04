@@ -46,25 +46,26 @@ void free_path_list(PathNode_t *l){
     }
 }
 
-PathData_t *split_path(char *path) {
+PathData_t *split_path(char *path, char *file_name) {
     PathData_t *path_data = init_path_data();
 
-    if (strcmp(path, "/") == 0) {
-
-    }
     char *path_part = strtok(path, "/");
     while (path_part != NULL) {
         char *next_path_part = strtok(NULL, "/");
-        if (next_path_part == NULL) {
+        if (next_path_part == NULL && !file_name) {
             // the path given is just a file name
             path_data->file_name = malloc((sizeof(char) * strlen(path_part)) + 1);
             strcpy(path_data->file_name, path_part);
-        } else {
+        }
+        else {
             add_path_part(path_data->path, path_part);
         }
         path_part = next_path_part;
     }
-
+    if (file_name){
+        path_data->file_name = malloc((sizeof(char) * strlen(file_name)) + 1);
+        strcpy(path_data->file_name, file_name);
+    }
     return path_data;
 }
 

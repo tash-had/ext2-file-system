@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
 
-    PathData_t *path_data = split_path(path);
+    PathData_t *path_data = split_path(path, NULL);
     int parent_inode = get_parent_inode(path_data);
 
     if (new_file_exists(parent_inode, path_data, EXT2_FT_DIR)) {
