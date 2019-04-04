@@ -22,14 +22,14 @@ int main(int argc, char **argv) {
     PathData_t *dest_path_data = split_path(dest_path);
     int dest_parent_inode = get_parent_inode(dest_path_data);
 
-    PathData_t *src_path_data = split_path(dest_path);
+    PathData_t *src_path_data = split_path(src_path);
     char *src_file_name = src_path_data->file_name;
 
     if (new_file_exists(dest_parent_inode, dest_path_data, EXT2_FT_REG_FILE)) {
         return EEXIST;
     }
 
-    FILE *src_file = open(src_path, 'rb');
+    FILE *src_file = fopen(src_path, "rb");
     if (src_file == NULL){
         return ENOENT;
     }
