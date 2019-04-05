@@ -23,4 +23,9 @@ int main(int argc, char **argv) {
 
     PathData_t *path_data = split_path(path, NULL);
     int parent_inode = get_parent_inode(path_data);
+    
+    if (!new_file_exists()){
+        return ENOENT;
+    }
+    deallocate all that shit
 }
