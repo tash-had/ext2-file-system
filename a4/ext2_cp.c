@@ -42,10 +42,19 @@ int main(int argc, char **argv) {
     int free_block = allocate_next_free(BLOCK); 
     int free_inode = allocate_next_free(INODE);
     if (free_block == -1 || free_inode == -1){
-        perror("No space");
         return ENOSPC;
     }
 
     init_inode(EXT2_S_IFREG, free_inode, free_block);
+    inode_table[free_inode-1].i_size = 0; //new empty file so set size to 0
     add_file_to_parent(dest_parent_inode, free_inode, src_file_name, EXT2_FT_REG_FILE);
+
+    struct ext2_inode *inode = &inode_table[free_inode - 1];
+    int ret = copy_to_fs(src_file, inode);
+    if (ret == 1){
+        return ENOENT;
+    }
+    else if(ret == 2){
+        return ENOSPC;
+    }
 }
