@@ -6,3 +6,11 @@ readimage.*
 *.o
 ext2_ls
 ext2_mkdir
+ext2_cp
+ext2_ln
+ext2_checker
+ext2_rm
+ext2_restore
+
+
+readimage

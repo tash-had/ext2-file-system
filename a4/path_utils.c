@@ -14,7 +14,6 @@ PathNode_t *init_path_node(){
 }
 
 
-
 void add_path_part(PathNode_t *l, char *str){
     struct path_node *cur = l;
     while (cur->path_part != NULL) {

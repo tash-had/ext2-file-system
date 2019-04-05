@@ -12,6 +12,10 @@ int main(int argc, char **argv) {
 
     char *src_path = argv[2];
     char *dest_path = argv[3];
+
+    for (int i = 0; i < argc; i ++) {
+        printf("ARG %d: %s\n", i, argv[i]);
+    }
     if (dest_path[0] != '/'){
         perror("Not absolute path");
         return ENOENT;
@@ -19,13 +23,11 @@ int main(int argc, char **argv) {
     struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
 
-
     PathData_t *src_path_data = split_path(src_path, NULL);
     char *src_file_name = src_path_data->file_name;
 
     PathData_t *dest_path_data = split_path(dest_path, src_file_name);
     int dest_parent_inode = get_parent_inode(dest_path_data);
-
 
     if (new_file_exists(dest_parent_inode, dest_path_data, EXT2_FT_REG_FILE)) {
         return EEXIST;
