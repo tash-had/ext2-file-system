@@ -22,9 +22,19 @@ int main(int argc, char **argv) {
 
     PathData_t *src_path_data = split_path(src_path, NULL);
     char *src_file_name = src_path_data->file_name;
+    PathData_t *dest_path_data;
+    int dest_parent_inode;
+    if (dest_path[strlen(dest_path)-1] == '/'){
+        dest_path_data = split_path(dest_path, src_file_name);
+        dest_parent_inode = get_parent_inode(dest_path_data);
+    }
+    else
+    {
+        dest_path_data = split_path(dest_path, NULL);
+        dest_parent_inode = get_parent_inode(dest_path_data);   
+    }
+    
 
-    PathData_t *dest_path_data = split_path(dest_path, src_file_name);
-    int dest_parent_inode = get_parent_inode(dest_path_data);
 
     if (new_file_exists(dest_parent_inode, dest_path_data, EXT2_FT_REG_FILE)) {
         return EEXIST;
@@ -46,7 +56,7 @@ int main(int argc, char **argv) {
 
     init_inode(EXT2_S_IFREG, free_inode, free_block);
     inode_table[free_inode-1].i_size = 0; //new empty file so set size to 0
-    add_file_to_parent(dest_parent_inode, free_inode, src_file_name, EXT2_FT_REG_FILE);
+    add_file_to_parent(dest_parent_inode, free_inode, dest_path_data->file_name, EXT2_FT_REG_FILE);
 
     struct ext2_inode *inode = &inode_table[free_inode - 1];
     int ret = copy_to_fs(src_file, inode, free_block);

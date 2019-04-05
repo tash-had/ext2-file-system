@@ -324,7 +324,7 @@ int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num){
         next_block = (unsigned char *)(disk + EXT2_BLOCK_SIZE * block_ptr);
         inode->i_size += amt_read;
         inode->i_block[i] = block_ptr;
-        inode->i_blocks += 1;
+        inode->i_blocks += 2;
         memcpy(next_block, buf, amt_read);
         i++;
  
@@ -337,7 +337,7 @@ int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num){
 
     block_ptr = allocate_next_free(BLOCK);
     inode->i_block[i] = block_ptr;
-    inode->i_blocks += 1;
+    inode->i_blocks += 2;
     int *indirect_block = (int *)(disk + block_ptr * EXT2_BLOCK_SIZE);
     
     i = 0;
@@ -357,7 +357,7 @@ int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num){
 
         inode->i_size += amt_read;
         indirect_block[i] = block_ptr;
-        inode->i_blocks += 1;
+        inode->i_blocks += 2;
         i++;
     }
 

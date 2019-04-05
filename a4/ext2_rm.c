@@ -1,5 +1,6 @@
 #include "common.h"
 #include "utils.h"
+#include "path_utils.h"
 
 int main(int argc, char **argv) {
     if(argc != 3) {
@@ -9,25 +10,17 @@ int main(int argc, char **argv) {
     init_disk(argv[1]);
 
     char *path = argv[2];
-    if (path[0] != '\\'){
+    if (path[0] != '/'){
         perror('Not absolute path');
         return ENOENT;
     }
-
-    char *curr_token = strtok(path, "\\");
-    char *next_token;
-    while (curr_token != NULL){
-        next_token = strtok(path, "\\");
-        //find inode of token
-
-        //if doesnt exist -> RETURN -EEXIST
-
-        //if next_token is NULL
-            //if curr_token already exist -> REMOVE LOGIC
-
-            //else RETURN -EEXIST
-        curr_token = next_token;
-        
-
+    if (path[strlen(path)-1] == '/'){
+        perror("Must not be a directory");
+        return ENOENT;
     }
+    struct ext2_group_desc *gd = get_group_desc();
+    struct ext2_inode *inode_table = get_inode_table();
+
+    PathData_t *path_data = split_path(path, NULL);
+    int parent_inode = get_parent_inode(path_data);
 }
