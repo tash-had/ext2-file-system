@@ -299,31 +299,37 @@ int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int typ
     return 0;
 }
 
-int copy_to_fs(FILE *src, struct ext2_inode *inode){
+int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num){
+
     unsigned char buf[EXT2_BLOCK_SIZE];
     int amt_read = 0;
     int block_ptr = 0;
-    int i = 0;
+    
+    amt_read = fread(buf, 1, EXT2_BLOCK_SIZE, src);
+    unsigned char *next_block = (unsigned char *)(disk + EXT2_BLOCK_SIZE * block_num);
+    inode->i_size = amt_read;
+    memcpy(next_block, buf, amt_read);
+    
+    int i = 1;
     while ((i < 12) && (amt_read = fread(buf, 1, EXT2_BLOCK_SIZE, src)) > 0){
         block_ptr = allocate_next_free(BLOCK);
         if (block_ptr < 0) {
             return 1;
         }
-        unsigned char *next_block = (unsigned char *)(disk + EXT2_BLOCK_SIZE * block_ptr);
+        next_block = (unsigned char *)(disk + EXT2_BLOCK_SIZE * block_ptr);
         inode->i_size += amt_read;
-        inode->i_block[i+1] = block_ptr;
+        inode->i_block[i] = block_ptr;
         inode->i_blocks += 1;
-        
         memcpy(next_block, buf, amt_read);
         i++;
  
     }
-
     if ((amt_read = fread(buf, 1, EXT2_BLOCK_SIZE, src)) <= 0) {
         return 0;
     }
 
     //need to use indirect block as not all data was stored
+
     block_ptr = allocate_next_free(BLOCK);
     inode->i_block[i] = block_ptr;
     inode->i_blocks += 1;
@@ -340,7 +346,7 @@ int copy_to_fs(FILE *src, struct ext2_inode *inode){
         memcpy(next_block, buf, amt_read);
 
         inode->i_size += amt_read;
-        indirect_block[i] = block_ptr;
+        indirect_block[i-1] = block_ptr;
         inode->i_blocks += 1;
     }
 

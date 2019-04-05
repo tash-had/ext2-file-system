@@ -13,9 +13,6 @@ int main(int argc, char **argv) {
     char *src_path = argv[2];
     char *dest_path = argv[3];
 
-    for (int i = 0; i < argc; i ++) {
-        printf("ARG %d: %s\n", i, argv[i]);
-    }
     if (dest_path[0] != '/'){
         perror("Not absolute path");
         return ENOENT;
@@ -52,7 +49,7 @@ int main(int argc, char **argv) {
     add_file_to_parent(dest_parent_inode, free_inode, src_file_name, EXT2_FT_REG_FILE);
 
     struct ext2_inode *inode = &inode_table[free_inode - 1];
-    int ret = copy_to_fs(src_file, inode);
+    int ret = copy_to_fs(src_file, inode, free_block);
     if (ret == 1){
         return ENOENT;
     }
