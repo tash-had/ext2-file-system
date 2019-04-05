@@ -253,7 +253,7 @@ void init_dir_entry(int dir_block_num, int offset,  int type, int inode_num, cha
     strncpy(new_dir_entry->name, name, strlen(name)); 
     new_dir_entry->file_type = type;
     new_dir_entry->name_len = strlen(name);
-    inode_table[inode_num - 1].i_links_count++;
+    
 }
 
 //adds new file to parent dir, adjust rec len of prev dir entry
@@ -262,6 +262,8 @@ int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int typ
     unsigned int block_num = parent->i_block[0];
     struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *)(disk + 
                                                          EXT2_BLOCK_SIZE*block_num);
+
+    struct ext2_inode *inode_table = get_inode_table();
     int total_len = 0;
     int rec_len = 0;
     int total_actual_size = 0;
@@ -290,8 +292,71 @@ int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int typ
         }
         total_len += rec_len;
     }
+    if (type == EXT2_FT_DIR){
+        inode_table[parent_inode_num - 1].i_links_count++;
+    }
     init_dir_entry(block_num, total_actual_size, type, inode_num, name, EXT2_BLOCK_SIZE-total_actual_size);
     return 0;
+}
+
+int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num){
+
+    unsigned char buf[EXT2_BLOCK_SIZE];
+    int amt_read = 0;
+    int block_ptr = 0;
+    
+    amt_read = fread(buf, 1, EXT2_BLOCK_SIZE, src);
+    unsigned char *next_block = (unsigned char *)(disk + EXT2_BLOCK_SIZE * block_num);
+    inode->i_size = amt_read;
+    memcpy(next_block, buf, amt_read);
+    
+    int i = 1;
+    while ((i < 12) && (amt_read = fread(buf, 1, EXT2_BLOCK_SIZE, src)) > 0){
+        block_ptr = allocate_next_free(BLOCK);
+        if (block_ptr < 0) {
+            return 1;
+        }
+        next_block = (unsigned char *)(disk + EXT2_BLOCK_SIZE * block_ptr);
+        inode->i_size += amt_read;
+        inode->i_block[i] = block_ptr;
+        inode->i_blocks += 1;
+        memcpy(next_block, buf, amt_read);
+        i++;
+ 
+    }
+    if ((amt_read = fread(buf, 1, EXT2_BLOCK_SIZE, src)) <= 0) {
+        return 0;
+    }
+
+    //need to use indirect block as not all data was stored
+
+    block_ptr = allocate_next_free(BLOCK);
+    inode->i_block[i] = block_ptr;
+    inode->i_blocks += 1;
+    int *indirect_block = (int *)(disk + block_ptr * EXT2_BLOCK_SIZE);
+    i = 0;
+    while ((i < EXT2_BLOCK_SIZE / sizeof(unsigned int)) && (amt_read = fread(buf, 1, EXT2_BLOCK_SIZE, src)) > 0){
+        block_ptr = allocate_next_free(BLOCK);
+
+        if (block_ptr < 0) {
+            return 1;
+        }
+
+        unsigned char *next_block = (unsigned char *)(disk + block_ptr * EXT2_BLOCK_SIZE);
+        memcpy(next_block, buf, amt_read);
+
+        inode->i_size += amt_read;
+        indirect_block[i-1] = block_ptr;
+        inode->i_blocks += 1;
+    }
+
+    if (fread(buf, 1, EXT2_BLOCK_SIZE, src) > 0) {
+        return 2;
+    }
+    else{
+        return 0;
+    }
+
 }
 
 
