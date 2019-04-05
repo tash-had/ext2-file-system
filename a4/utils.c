@@ -188,7 +188,7 @@ int get_parent_inode(PathData_t *path_data) {
 
 }
 
-struct ext2_inode *get_inode(unsigned int inode_num) {
+struct ext2_inode *get_inode(unsigned int inode_num, PathData_t *pd) {
     int inode_idx = inode_num - 1;
 
     if (inode_idx > get_super_block()->s_inodes_count ||
