@@ -49,7 +49,7 @@ case ${answer:0:1} in
 esac
 echo "====="
 
-./ext2_mkdir images/emptydisk.img invalid/bit/
+./ext2_mkdir images/emptydisk.img /invalid/bit/
 read -p "EXT2_MKDIR: CREATED FOLDER IN INVALID PATH /invalid/bit ON emptydisk.img. SEE EXIT CODE? Y/N " answer
 case ${answer:0:1} in
     y|Y )

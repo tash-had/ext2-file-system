@@ -188,14 +188,19 @@ int get_parent_inode(PathData_t *path_data) {
 
 }
 
-struct ext2_inode *get_inode(unsigned int inode_num, PathData_t *pd) {
-    int inode_idx = inode_num - 1;
+struct ext2_inode *get_inode(unsigned int inode_num) {
 
-    if (inode_idx > get_super_block()->s_inodes_count ||
-        (inode_idx != EXT2_ROOT_INO && inode_idx < get_super_block()->s_first_ino)) {
-    }
+//    if (pd == NULL) {
+        int inode_idx = inode_num - 1;
 
-    return &get_inode_table()[inode_idx];
+        if (inode_idx > get_super_block()->s_inodes_count ||
+            (inode_idx != EXT2_ROOT_INO && inode_idx < get_super_block()->s_first_ino)) {
+        }
+        return &get_inode_table()[inode_idx];
+//    }
+
+//    }
+
 }
 
 

@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     int dst_parent_inode = get_parent_inode(dst);
 
     if (!sym_link) {
-
+        
     } else {
 
     }
