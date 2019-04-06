@@ -24,9 +24,4 @@ void init_inode(int type, int inode_idx, int block_num);
 void check_valid(void *ext2_struct, char *item);
 struct ext2_inode *get_inode_with_num(unsigned int inode_number);
 int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num);
-
-struct IntPair_t {
-    int inode_num;
-    int block_num;
-};
-typedef struct int_pair_t InodeMetadata_t;
+void deallocate(int index, int type);
