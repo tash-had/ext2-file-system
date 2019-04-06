@@ -681,5 +681,8 @@ int total_inconsistencies() {
     int dtime = fix_dtime();
     int block_alloc = fix_block_allocation();
 
-    return inodes_count+blocks_count+mode_type+inode_alloc+dtime+block_alloc;
+    int inodes_count2 = fix_inodes_count();
+    int blocks_count2 = fix_blocks_count();
+
+    return inodes_count+blocks_count+mode_type+inode_alloc+dtime+block_alloc+inodes_count2+blocks_count2;
 }
