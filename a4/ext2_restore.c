@@ -2,11 +2,13 @@
 #include "utils.h"
 #include "path_utils.h"
 
-int total_actual_size(int parent_num){
-    struct ext2_inode *parent = get_inode_with_num((unsigned int) parent_num);
+int add_restored_to_parent(int parent_inode_num, struct ext2_dir_entry *del) {
+    struct ext2_inode *parent = get_inode_with_num((unsigned int) parent_inode_num);
     unsigned int block_num = parent->i_block[0];
     struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *) (disk +
                                                                        EXT2_BLOCK_SIZE * block_num);
+
+    struct ext2_inode *inode_table = get_inode_table();
     int total_len = 0;
     int rec_len = 0;
     int total_actual_size = 0;
@@ -17,14 +19,38 @@ int total_actual_size(int parent_num){
         total_len += rec_len;
     }
 
-    return total_actual_size;
+    if (total_actual_size + get_rec_len(del->name) > EXT2_BLOCK_SIZE) {
+        return 1;
+    }
+
+    total_len = 0;
+    rec_len = 0;
+    int actual_size;
+
+    curr_dir_entry = (struct ext2_dir_entry *) (disk + EXT2_BLOCK_SIZE * block_num);
+    while (total_len < EXT2_BLOCK_SIZE) {
+        curr_dir_entry = (void *) curr_dir_entry + rec_len;
+        actual_size = get_rec_len(curr_dir_entry->name);
+        rec_len = curr_dir_entry->rec_len;
+        if (actual_size < rec_len) {
+            curr_dir_entry->rec_len = actual_size;
+        }
+        total_len += rec_len;
+    }
+    if (del->file_type == EXT2_FT_DIR) {
+        inode_table[parent_inode_num - 1].i_links_count++;
+    }
+    // TODO set location
+    del->rec_len = EXT2_BLOCK_SIZE - total_actual_size;
+//    init_dir_entry(block_num, total_actual_size, type, inode_num, name, );
+    return 0;
 }
 int main(int argc, char **argv) {
     if(argc != 3) {
         fprintf(stderr, "Usage: %s <image file name> <path>\n", argv[0]);
         exit(1);
     }
-    init_disk(argv[1]); 
+    init_disk(argv[1]);
 
     char *path = argv[2];
     if (path[0] != '/'){
@@ -72,7 +98,6 @@ int main(int argc, char **argv) {
                                 allocate_inode_with_num(deleted_dir_entry->inode);
                                 (&inode_table[deleted_dir_entry->inode -1])->i_dtime = 0;
                                 (&inode_table[deleted_dir_entry->inode -1])->i_links_count++;
-                                deleted_dir_entry->rec_len = EXT2_BLOCK_SIZE - total_actual_size(parent_inode_num);
                                 struct ext2_inode *restored_inode = get_inode_with_num(deleted_dir_entry->inode);
 
 
@@ -89,8 +114,8 @@ int main(int argc, char **argv) {
                                     }
                                 }
 
-                                struct ext2_dir_entry *prev_dir = (void *)curr_dir - rec_len;
-                                prev_dir->rec_len = (unsigned short) get_rec_len(prev_dir->name);
+                                int ret = add_restored_to_parent(parent_inode_num, deleted_dir_entry);
+                                break;
 //                                int total_len = 0;
 //                                int rec = 0;
 //                                int block_num = parent_inode->i_block[0];

@@ -120,8 +120,8 @@ void allocate_block_with_num(unsigned int block_num) {
     unsigned char *byte = &block_bitmap[block_idx/8];
 
     *byte |= (unsigned int)( ~(1 << (block_idx % 8)));
-    gd->bg_free_blocks_count++;
-    sb->s_free_blocks_count++;
+    gd->bg_free_blocks_count--;
+    sb->s_free_blocks_count--;
 }
 
 /**
