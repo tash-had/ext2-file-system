@@ -79,7 +79,6 @@ int allocate_next_free(int type) {
     for (int i = 0; i < count; i++) {
         for (int j = 0; j < 8; j++) {
 
-//            printf(" %d ", (bitmap[i] >> j) & 1 );
             if (!((bitmap[i] >> j) & 1)) {
                 bitmap[i] |= 1 << j;
                 if (type == BLOCK) {
@@ -369,7 +368,7 @@ void deallocate(int num, int type){
     }
     int index = num - 1;
     unsigned char *byte =  (unsigned char *) &bitmap[index/8];
-    *byte &= (unsigned int)( ~(1 << (index % 8)) );
+    *byte &= (unsigned int)( ~(1 << (index % 8)));
     if (type == BLOCK) {
         gd->bg_free_blocks_count++;
         sb->s_free_blocks_count++;

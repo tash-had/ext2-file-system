@@ -23,19 +23,30 @@ int main(int argc, char **argv) {
      * TODO
      * - Do error checking
      */
-
+    struct ext2_inode *inode_table = get_inode_table();
     PathData_t *src = split_path(src_path, NULL);
     PathData_t *dst = split_path(dest_path, NULL);
 
     int src_inode_num = get_inode_with_path(src);
-
+    
     int dest_parent_inode = get_parent_inode(dst);
-
+    if (dest_parent_inode < 0){
+        return ENOENT;
+    }
 
     if (!sym_link) {
         // initialize new inode
+        if (new_file_exists(dest_parent_inode, src, EXT2_FT_REG_FILE)){
+            return EEXIST;
+        }
+        if (inode_table[dest_parent_inode-1].i_mode & EXT2_S_IFDIR){
+            return EISDIR;
+        }
         int file_added = add_file_to_parent(dest_parent_inode, src_inode_num, dst->file_name, EXT2_FT_REG_FILE);
-        get_inode_table()[src_inode_num].i_links_count += 1;
+        if (file_added){
+            return ENOSPC;
+        }
+        inode_table[src_inode_num].i_links_count += 1;
     } else {
         /**
          * TODO
@@ -49,8 +60,6 @@ int main(int argc, char **argv) {
             return ENOSPC;
         }
         init_inode(EXT2_FT_SYMLINK, free_inode, free_block);
-
-
         int file_added = add_file_to_parent(dest_parent_inode, free_inode, dst->file_name, EXT2_FT_SYMLINK);
 
     }
