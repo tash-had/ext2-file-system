@@ -40,11 +40,11 @@ struct ext2_inode *get_inode_table() {
 }
 
 unsigned char *get_inode_map() {
-    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_inode_bitmap);
+    return (unsigned char *)(disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_inode_bitmap);
 }
 
 unsigned char *get_block_bitmap() {
-    return (disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_block_bitmap);
+    return (unsigned char *)(disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_block_bitmap);
 }
 
 int is_valid(unsigned char *inode_bitmap, int bit_idx) {
@@ -357,6 +357,28 @@ int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num) {
         return 0;
     }
 
+}
+
+void deallocate(int num, int type){
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *bitmap;
+    if (type == BLOCK){
+        bitmap = get_block_bitmap();
+    }
+    else {
+        bitmap = get_inode_map();
+    }
+    int index = num - 1;
+    unsigned char *byte =  (unsigned char *) &bitmap[index/8];
+    *byte &= (unsigned int)( ~(1 << (index % 8)) );
+    if (type == BLOCK) {
+        gd->bg_free_blocks_count++;
+        sb->s_free_blocks_count++;
+    } else {
+        gd->bg_free_inodes_count++;
+        sb->s_free_inodes_count++;
+    }
 }
 
 
