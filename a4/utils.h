@@ -25,3 +25,4 @@ void check_valid(void *ext2_struct, char *item);
 struct ext2_inode *get_inode_with_num(unsigned int inode_number);
 int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num);
 void deallocate(int index, int type);
+int get_first_unused_block_idx(int inode_num);

@@ -193,10 +193,12 @@ struct ext2_inode *get_inode_with_num(unsigned int inode_num) {
     return &inode_table[inode_idx];
 }
 
+
 //check if file to be made exists
 int new_file_exists(int parent_inode, PathData_t *path_data, int type) {
     struct ext2_super_block *sb = get_super_block();
     struct ext2_inode *inode_table = get_inode_table();
+
     for (int i = 0; i < sb->s_inodes_count; i++) {
         if (is_valid(get_inode_map(), i) && (i == parent_inode - 1)) {
             struct ext2_inode curr_inode = inode_table[i];
@@ -228,7 +230,7 @@ int get_rec_len(char *dir_ent_name) {
     if (!(strlen(dir_ent_name) % 4)) {
         return sizeof(struct ext2_dir_entry) + strlen(dir_ent_name);
     } else {
-        int new_len = 4 * ((strlen(dir_ent_name) / 4) + 1); //round up to multiple of 4
+        int new_len = (int) (4 * ((strlen(dir_ent_name) / 4) + 1)); //round up to multiple of 4
         return sizeof(struct ext2_dir_entry) + new_len;
     }
 }
@@ -378,5 +380,62 @@ void deallocate(int num, int type){
     }
 }
 
+int get_first_unused_block_idx(int inode_num) {
+    struct ext2_inode inode_table = get_inode_table()[inode_num - 1];
+    unsigned int *i_block = inode_table.i_block;
 
+    for (int i = 0; i < 15; i++) {
+        if (i_block[i] == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int restore() {
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_inode *inode_table = get_inode_table();
+
+    int inodes_count = sb->s_inodes_count;
+    int inode_index = 1;
+    PathNode_t *curr_path = path_data->path;
+
+    if (curr_path->next == NULL) {
+        // the path is just a filename. no need to traverse through directories, just check for duplicates
+        // in t
+        return EXT2_ROOT_INO; //root is the parent
+    }
+    for (int i = 0; i < inodes_count; i++) {
+        if (is_valid(get_inode_map(), i) && (i == inode_index)) {
+            struct ext2_inode curr_inode = inode_table[i];
+            struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *) (disk +
+                                                                         EXT2_BLOCK_SIZE * curr_inode.i_block[0]);
+
+            int traversed_len = 0;
+            int rec_len = 0;
+            int found = 0;
+            while (traversed_len < EXT2_BLOCK_SIZE) {
+                curr_dir = (void *) curr_dir + rec_len;
+                char *cur_path_part = curr_path->path_part;
+                if (strcmp(curr_dir->name, cur_path_part) == 0 && curr_dir->inode != 0 &&
+                    (curr_dir->file_type == EXT2_FT_DIR)) {
+                    inode_index = curr_dir->inode - 1;
+
+                    if (curr_path->next->path_part == NULL) {
+                        return curr_dir->inode;
+                    }
+                    curr_path = curr_path->next;
+                    found = 1;
+                    break;
+                }
+                rec_len = curr_dir->rec_len;
+                traversed_len += rec_len;
+            }
+            if (!found) {
+                return -1;
+            }
+        }
+    }
+    return -1;
+}
 
