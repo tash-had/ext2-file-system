@@ -106,7 +106,6 @@ int allocate_next_free(int type) {
  * @param block_num
  */
 void init_inode(int type, int inode_num, int block_num) {
-    struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
     struct ext2_inode new_inode;
 
