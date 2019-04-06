@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
         if (file_added){
             return ENOSPC;
         }
-        inode_table[src_inode_num].i_links_count += 1;
+        inode_table[src_inode_num-1].i_links_count += 1;
     } else {
         /**
          * TODO
