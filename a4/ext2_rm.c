@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
         return ENOENT;
     }
     struct ext2_inode *inode = &inode_table[inode_num-1];
-    
+
     struct ext2_inode *parent_inode = &inode_table[parent_inode_num-1];
     struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *)(disk +
                                                                 EXT2_BLOCK_SIZE*parent_inode->i_block[0]);
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
         traversed_len += rec_len;
         i++;
     }
-    
+
     unsigned char *block_bitmap = get_block_bitmap();
     inode->i_links_count--;
     if (inode->i_links_count == 0){
