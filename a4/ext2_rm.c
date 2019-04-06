@@ -2,6 +2,11 @@
 #include "utils.h"
 #include "path_utils.h"
 
+/**
+ * #include <time.h>
+ * inode.i_dtime = time(NULL)
+*/
+
 int main(int argc, char **argv) {
     if(argc != 3) {
         fprintf(stderr, "Usage: %s <image file name> <path>\n", argv[0]);
@@ -24,8 +29,17 @@ int main(int argc, char **argv) {
     PathData_t *path_data = split_path(path, NULL);
     int parent_inode = get_parent_inode(path_data);
     
-    if (!new_file_exists()){
+    if (!new_file_exists(parent_inode, path_data, EXT2_FT_REG_FILE)){
         return ENOENT;
     }
-    deallocate all that shit
+    
+    update rec len of prev dir ext2_dir_entry
+    deallocate block
+    dec link count
+    if links count now zero,
+        dealloc inode
+        dealloc BLOCK
+        update time_t
+
+
 }
