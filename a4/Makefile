@@ -1,5 +1,5 @@
 
-all: ext2_mkdir ext2_cp ext2_ln ext2_rm ext2_checker
+all: ext2_mkdir ext2_cp ext2_ln ext2_rm ext2_checker ext2_restore
 
 ext2_mkdir : ext2_mkdir.o utils.o path_utils.o
 	gcc -Wall -g -o ext2_mkdir $^

@@ -2,6 +2,23 @@
 #include "utils.h"
 #include "path_utils.h"
 
+int total_actual_size(int parent_num){
+    struct ext2_inode *parent = get_inode_with_num((unsigned int) parent_num);
+    unsigned int block_num = parent->i_block[0];
+    struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *) (disk +
+                                                                       EXT2_BLOCK_SIZE * block_num);
+    int total_len = 0;
+    int rec_len = 0;
+    int total_actual_size = 0;
+    while (total_len < EXT2_BLOCK_SIZE) {
+        curr_dir_entry = (void *) curr_dir_entry + rec_len;
+        total_actual_size += get_rec_len(curr_dir_entry->name);
+        rec_len = curr_dir_entry->rec_len;
+        total_len += rec_len;
+    }
+
+    return total_actual_size;
+}
 int main(int argc, char **argv) {
     if(argc != 3) {
         fprintf(stderr, "Usage: %s <image file name> <path>\n", argv[0]);
@@ -11,7 +28,7 @@ int main(int argc, char **argv) {
 
     char *path = argv[2];
     if (path[0] != '/'){
-        perror('Not absolute path');
+        perror("Not absolute path");
         return ENOENT;
     }
 
@@ -37,7 +54,8 @@ int main(int argc, char **argv) {
 
             int traversed_len = 0;
             int rec_len = 0;
-
+            int found = 0;
+            int i = 0;
             while (traversed_len  < EXT2_BLOCK_SIZE) {
                 curr_dir = (void *) curr_dir + rec_len;
                 // We are now within a directory in side the PARENT of our deleted file.
@@ -54,6 +72,9 @@ int main(int argc, char **argv) {
                                 allocate_inode_with_num(deleted_dir_entry->inode);
                                 (&inode_table[deleted_dir_entry->inode -1])->i_dtime = 0;
                                 (&inode_table[deleted_dir_entry->inode -1])->i_links_count++;
+                                deleted_dir_entry->rec_len = EXT2_BLOCK_SIZE - total_actual_size(parent_inode_num);
+                                struct ext2_inode *restored_inode = get_inode_with_num(deleted_dir_entry->inode);
+
 
                                 /**
                                  * TODO
@@ -68,7 +89,23 @@ int main(int argc, char **argv) {
                                     }
                                 }
 
+                                struct ext2_dir_entry *prev_dir = (void *)curr_dir - rec_len;
+                                prev_dir->rec_len = (unsigned short) get_rec_len(prev_dir->name);
+//                                int total_len = 0;
+//                                int rec = 0;
+//                                int block_num = parent_inode->i_block[0];
+//                                struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *) (disk + EXT2_BLOCK_SIZE * block_num);
+//                                while (total_len < EXT2_BLOCK_SIZE) {
+//                                    curr_dir_entry = (void *) curr_dir_entry + rec;
+//                                    rec_len = curr_dir_entry->rec_len;
+//                                    if (actual_size < rec_len) {
+//                                        curr_dir_entry->rec_len = actual_size;
+//                                    }
+//                                    total_len += rec;
+//                                }
+
                             }
+
                         } else {
                             // inode is already in use!
                             return ENOENT;

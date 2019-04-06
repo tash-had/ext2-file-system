@@ -420,8 +420,8 @@ int fix_inodes_count(){
             }
         }
     }
-    int sb_num_inconsistencies = abs(sb->s_free_inodes_count - free_inodes);
-    int gd_num_inconsistencies = abs(gd->bg_free_inodes_count - free_inodes);
+    int sb_num_inconsistencies = abs((int) sb->s_free_inodes_count - free_inodes);
+    int gd_num_inconsistencies = abs((int) gd->bg_free_inodes_count - free_inodes);
     if (sb_num_inconsistencies > 0){
         sb->s_free_inodes_count = free_inodes;
         printf("Fixed: superblock's free inodes counter was off by %d compared to the bitmap\n", sb_num_inconsistencies);
@@ -447,8 +447,8 @@ int fix_blocks_count(){
             }
         }
     }
-    int sb_num_inconsistencies = abs(sb->s_free_blocks_count - free_blocks);
-    int gd_num_inconsistencies = abs(gd->bg_free_blocks_count - free_blocks);
+    int sb_num_inconsistencies = abs((int) sb->s_free_blocks_count - free_blocks);
+    int gd_num_inconsistencies = abs((int) gd->bg_free_blocks_count - free_blocks);
     if (sb_num_inconsistencies > 0){
         sb->s_free_blocks_count = free_blocks;
         printf("Fixed: superblock's free blocks counter was off by %d compared to the bitmap\n", sb_num_inconsistencies);
@@ -524,55 +524,6 @@ int get_first_unused_block_idx(int inode_num) {
     }
     return -1;
 }
-//
-//int restore() {
-//    struct ext2_super_block *sb = get_super_block();
-//    struct ext2_inode *inode_table = get_inode_table();
-//
-//    int inodes_count = sb->s_inodes_count;
-//    int inode_index = 1;
-//    PathNode_t *curr_path = path_data->path;
-//
-//    if (curr_path->next == NULL) {
-//        // the path is just a filename. no need to traverse through directories, just check for duplicates
-//        // in t
-//        return EXT2_ROOT_INO; //root is the parent
-//    }
-//    for (int i = 0; i < inodes_count; i++) {
-//        if (is_valid(get_inode_map(), i) && (i == inode_index)) {
-//            struct ext2_inode curr_inode = inode_table[i];
-//            struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *) (disk +
-//                                                                         EXT2_BLOCK_SIZE * curr_inode.i_block[0]);
-//
-//            int traversed_len = 0;
-//            int rec_len = 0;
-//            int found = 0;
-//            while (traversed_len < EXT2_BLOCK_SIZE) {
-//                curr_dir = (void *) curr_dir + rec_len;
-//                char *cur_path_part = curr_path->path_part;
-//                if (strcmp(curr_dir->name, cur_path_part) == 0 && curr_dir->inode != 0 &&
-//                    (curr_dir->file_type == EXT2_FT_DIR)) {
-//                    inode_index = curr_dir->inode - 1;
-//
-//                    if (curr_path->next->path_part == NULL) {
-//                        return curr_dir->inode;
-//                    }
-//                    curr_path = curr_path->next;
-//                    found = 1;
-//                    break;
-//                }
-//                rec_len = curr_dir->rec_len;
-//                traversed_len += rec_len;
-//            }
-//            if (!found) {
-//                return -1;
-//            }
-//        }
-//    }
-//    return -1;
-//
-//}
-
 //part c
 int fix_inode_allocation() {
         int inconsist = 0;
