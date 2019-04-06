@@ -52,10 +52,14 @@ int main(int argc, char **argv) {
                         if (!is_valid(get_inode_map(), deleted_dir_entry->inode)) {
                             if (strlen(pd->file_name) == deleted_dir_entry->name_len && strncmp(pd->file_name, deleted_dir_entry->name, deleted_dir_entry->name_len) == 0) {
                                 allocate_inode_with_num(deleted_dir_entry->inode);
+                                (&inode_table[deleted_dir_entry->inode -1])->i_dtime = 0;
+                                (&inode_table[deleted_dir_entry->inode -1])->i_links_count++;
 
-                                struct ext2_inode *restored_inode = get_inode_with_num(deleted_dir_entry->inode);
-
-                                for (int j = 0; j < 15; j++) {
+                                /**
+                                 * TODO
+                                 * handle indirection
+                                 */
+                                for (int j = 0; j < 12; j++) {
                                     if (!restored_inode->i_block[j]) {
                                         // no more blocks to restore
                                         break;
@@ -66,12 +70,9 @@ int main(int argc, char **argv) {
 
                             }
                         } else {
-                            // inode is already in use again!
+                            // inode is already in use!
                             return ENOENT;
                         }
-                        // check inode bitmap.
-                            // used? Cant do anything
-                            // else: find name & name_len matching the one were looking for
                             /**
                              * name and name_len matches,
                              *      restore by reallocating inode in bitmap, increasing link count
@@ -83,10 +84,9 @@ int main(int argc, char **argv) {
                              */
                     }
                 }
-
+                rec_len = curr_dir->rec_len;
+                traversed_len += rec_len;
             }
-
         }
     }
-
 }

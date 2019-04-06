@@ -247,7 +247,6 @@ int new_file_exists(int parent_inode, PathData_t *path_data, int type) {
                 }
                 rec_len = curr_dir->rec_len;
                 traversed_len += rec_len;
-
             }
         }
     }
