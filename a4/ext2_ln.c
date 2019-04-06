@@ -23,10 +23,10 @@ int main(int argc, char **argv) {
     PathData_t *dst = split_path(dest_path, NULL);
 
     int src_parent_inode = get_parent_inode(src);
-    int dst_parent_inode = get_parent_inode(dst);
+    int dst_parent_inode = get_inode_with_path();
 
     if (!sym_link) {
-        
+
     } else {
 
     }
