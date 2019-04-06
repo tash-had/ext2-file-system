@@ -1,6 +1,9 @@
 #include "path_utils.h"
 #include "utils.h"
 
+#ifndef CSC369_EXT2_FS_H
+#define CSC369_EXT2_FS_H
+#endif
 
 /*
 * Return a dynamically allocated CharList with initialized values.
@@ -85,7 +88,7 @@ int get_inode_with_path(PathData_t *pd) {
     struct ext2_inode *inode_table = get_inode_table();
     if (pd->path->path_part == NULL) {
         // given a file.
-        return -1;
+        return ENOENT;
     }
 
     int parent_inode_num = get_parent_inode(pd);

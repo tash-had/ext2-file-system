@@ -5,6 +5,9 @@
 
 unsigned char *disk;
 
+
+
+
 struct ext2_super_block *get_super_block();
 struct ext2_group_desc *get_group_desc();
 struct ext2_inode *get_inode_table();

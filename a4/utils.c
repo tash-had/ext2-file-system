@@ -356,7 +356,6 @@ int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num) {
     } else {
         return 0;
     }
-
 }
 
 void deallocate(int num, int type){

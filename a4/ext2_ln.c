@@ -22,11 +22,25 @@ int main(int argc, char **argv) {
     PathData_t *src = split_path(src_path, NULL);
     PathData_t *dst = split_path(dest_path, NULL);
 
-    int src_parent_inode = get_parent_inode(src);
-    int dst_parent_inode = get_parent_inode(dst);
+    int dst_inode_num = get_inode_with_path(dst);
+    int src_inode_num = get_inode_with_path(src);
+
+    /**
+     * TODO
+     * Create a fxn to initialize this so it's not repeated
+     */
+    int free_block = allocate_next_free(BLOCK);
+    int free_inode = allocate_next_free(INODE);
+    if (free_block == -1 || free_inode == -1){
+        perror("No space");
+        return ENOSPC;
+    }
 
     if (!sym_link) {
-        
+        // initialize new inode
+        init_inode(EXT2_S_IFDIR, free_inode, free_block);
+        int file_added = add_file_to_parent(dst_inode_num, src_inode_num , src->file_name, EXT2_FT_REG_FILE);
+        get_inode_table()[src_inode_num].i_links_count += 1;
     } else {
 
     }

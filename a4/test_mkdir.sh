@@ -1,3 +1,11 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#    MKDIR
+#       TESTS
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+echo ""
+echo ""
+echo ""
+echo "LN TESTS"
 sh reloaddisk.sh
 
 ./ext2_mkdir images/emptydisk.img /new
@@ -60,4 +68,3 @@ case ${answer:0:1} in
     ;;
 esac
 echo "====="
-
