@@ -19,6 +19,11 @@ int main(int argc, char **argv) {
         dest_path = argv[4];
     }
 
+    /**
+     * TODO
+     * - Do error checking
+     */
+
     PathData_t *src = split_path(src_path, NULL);
     PathData_t *dst = split_path(dest_path, NULL);
 
@@ -27,7 +32,7 @@ int main(int argc, char **argv) {
 
     /**
      * TODO
-     * Create a fxn to initialize this so it's not repeated
+     * - Create a fxn to initialize this so it's not repeated
      */
     int free_block = allocate_next_free(BLOCK);
     int free_inode = allocate_next_free(INODE);
