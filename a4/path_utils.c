@@ -81,11 +81,11 @@ void free_path_data(PathData_t *pd) {
     free(pd);
 }
 
-struct ext2_inode *get_inode_with_path(PathData_t *pd, int type) {
+int get_inode_with_path(PathData_t *pd) {
     struct ext2_inode *inode_table = get_inode_table();
     if (pd->path->path_part == NULL) {
         // given a file.
-        return NULL;
+        return -1;
     }
 
     int parent_inode_num = get_parent_inode(pd);
@@ -98,15 +98,14 @@ struct ext2_inode *get_inode_with_path(PathData_t *pd, int type) {
 
     while (traversed_len < EXT2_BLOCK_SIZE){
         curr_dir = (void *)curr_dir + rec_len;
-        if (strcmp(curr_dir->name, pd->file_name) == 0 && curr_dir->inode != 0 &&
-            (curr_dir->file_type == type)){
+        if (strcmp(curr_dir->name, pd->file_name) == 0 && curr_dir->inode != 0){
             //dir already exists, abort mission
-            return &inode_table[curr_dir->inode-1];
+            return curr_dir->inode;
         }
         rec_len = curr_dir->rec_len;
         traversed_len += rec_len;
     }
-    return NULL;
+    return -1;
 }
 
 
