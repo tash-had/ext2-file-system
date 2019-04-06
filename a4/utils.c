@@ -377,6 +377,209 @@ void deallocate(int num, int type){
         sb->s_free_inodes_count++;
     }
 }
+//part a
+int fix_inodes_count(){
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *bitmap = get_inode_map();
+    int count = sb->s_inodes_count / 8;
+    int free_inodes = 0;
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (!((bitmap[i] >> j) & 1)) {
+                free_inodes++;
+            }
+        }
+    }
+    int sb_num_inconsistencies = abs(sb->s_free_inodes_count - free_inodes);
+    int gd_num_inconsistencies = abs(gd->bg_free_inodes_count - free_inodes);
+    if (sb_num_inconsistencies > 0){
+        sb->s_free_inodes_count = free_inodes;
+        printf("Fixed: superblock's free inodes counter was off by %d compared to the bitmap\n", sb_num_inconsistencies);
+    }
 
+    if (gd_num_inconsistencies > 0){
+        gd->bg_free_inodes_count = free_inodes;
+        printf("Fixed: block group's free inodes counter was off by %d compared to the bitmap\n", gd_num_inconsistencies);
+    }
+    return sb_num_inconsistencies + gd_num_inconsistencies;
+}
+//part a
+int fix_blocks_count(){
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *bitmap = get_block_bitmap();
+    int count = sb->s_blocks_count / 8;
+    int free_blocks = 0;
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (!((bitmap[i] >> j) & 1)) {
+                free_blocks++;
+            }
+        }
+    }
+    int sb_num_inconsistencies = abs(sb->s_free_blocks_count - free_blocks);
+    int gd_num_inconsistencies = abs(gd->bg_free_blocks_count - free_blocks);
+    if (sb_num_inconsistencies > 0){
+        sb->s_free_blocks_count = free_blocks;
+        printf("Fixed: superblock's free blocks counter was off by %d compared to the bitmap\n", sb_num_inconsistencies);
+    }
 
+    if (gd_num_inconsistencies > 0){
+        gd->bg_free_blocks_count = free_blocks;
+        printf("Fixed: block group's free blocks counter was off by %d compared to the bitmap\n", gd_num_inconsistencies);
+    }
+    return sb_num_inconsistencies + gd_num_inconsistencies;
+}
+unsigned char get_type(int mode){
+    if (mode & EXT2_S_IFDIR){
+        return EXT2_FT_DIR;
+    }
+    else if (mode & EXT2_S_IFREG){
+        return EXT2_FT_REG_FILE;
+    }
+    else{
+        return EXT2_FT_SYMLINK;
+    }
+}
 
+// part b
+int fix_mode_type(){
+    int inconsist = 0;
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    struct ext2_inode *inode_table = get_inode_table();
+
+    for (int i = 1; i < sb->s_inodes_count; i++) {
+        if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+            struct ext2_inode curr_inode = inode_table[i];
+            struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *) (disk +
+                                                                         EXT2_BLOCK_SIZE * curr_inode.i_block[0]);
+            int traversed_len = 0;
+            int rec_len = 0;
+            while (traversed_len < EXT2_BLOCK_SIZE) {
+                curr_dir = (void *) curr_dir + rec_len;
+                struct ext2_inode *inode = &inode_table[curr_dir->inode-1];
+                unsigned char type = get_type(inode->i_mode);
+                if (type != curr_dir->file_type){
+                    curr_dir->file_type = type;
+                    printf("Fixed: Entry type vs inode mismatch: inode [%d]\n", curr_dir->inode);
+                    inconsist++;
+
+                }
+                rec_len = curr_dir->rec_len;
+                traversed_len += rec_len;
+            }
+        }
+    }
+    return inconsist;
+
+}
+
+//part c
+int fix_inode_allocation(){
+    int inconsist = 0;
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *bitmap = get_inode_map();
+    int count = sb->s_inodes_count / 8;
+
+    
+    struct ext2_inode *inode_table = get_inode_table();
+    for (int i = 1; i < sb->s_inodes_count; i++) {
+        if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+            struct ext2_inode curr_inode = inode_table[i];
+            struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *) (disk +
+                                                                         EXT2_BLOCK_SIZE * curr_inode.i_block[0]);
+            int traversed_len = 0;
+            int rec_len = 0;
+            while (traversed_len < EXT2_BLOCK_SIZE) {
+                curr_dir = (void *) curr_dir + rec_len;
+                int index =  curr_dir->inode - 1;
+                unsigned char *byte =  (unsigned char *) &bitmap[index/8];
+                
+                if (*byte & (1 << (index% 8))){
+                    *byte |= (unsigned int)(1 << (index % 8));
+                    inconsist++;
+                    printf("Fixed: inode [%d] not marked as in-use\n", curr_dir->inode);
+                }
+                rec_len = curr_dir->rec_len;
+                traversed_len += rec_len;
+            }
+        }
+    }
+    return inconsist;
+
+}
+
+// part d
+
+int fix_dtime(){
+    int inconsist = 0;
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    struct ext2_inode *inode_table = get_inode_table();
+
+    for (int i = 0; i < sb->s_inodes_count; i++) {
+        if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+            struct ext2_inode *curr_inode = &inode_table[i];
+            if ( curr_inode->i_dtime != 0){
+                inconsist++;
+                curr_inode->i_dtime = 0;
+                printf("Fixed: valid inode marked for deletion: [%d]\n",i+1);
+            }
+        }
+    }
+    return inconsist;
+}
+
+// part e
+int fix_block_allocation(){
+    int inconsist = 0;
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *bitmap = get_block_bitmap();
+    int count = sb->s_blocks_count / 8;
+
+    
+    struct ext2_inode *inode_table = get_inode_table();
+    for (int i = 1; i < sb->s_inodes_count; i++) {
+        if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+            struct ext2_inode curr_inode = inode_table[i];
+            int blocks_changed = 0;
+            unsigned int *block_ptrs = curr_inode.i_block;
+            for (int j = 0; j < 15; j++){
+                if (block_ptrs[j] == 0){
+                    break;
+                }
+                int index =  block_ptrs[j] - 1;
+                unsigned char *byte =  (unsigned char *) &bitmap[index/8];
+                
+                if (*byte & (1 << (index% 8))){
+                    *byte |= (unsigned int)(1 << (index % 8));
+                    blocks_changed++;
+                }
+
+            }
+            if (blocks_changed > 0){
+                printf("Fixed: D in-use data blocks not marked in data bitmap for inode: [%d]\n", i+1);
+                inconsist++;
+            }
+        }
+    }
+    return inconsist;
+
+}
+
+int total_inconsistencies(){
+    int inodes_count = fix_inodes_count();
+    int blocks_count = fix_blocks_count();
+    int mode_type = fix_mode_type();
+    int inode_alloc = fix_inode_allocation();
+    int dtime = fix_dtime();
+    int block_alloc = fix_block_allocation();
+
+    int inodes_count2 = fix_inodes_count();
+    int blocks_count2 = fix_blocks_count();
+    return inodes_count+blocks_count+mode_type+inode_alloc+dtime+block_alloc+inodes_count2+blocks_count2;
+}
