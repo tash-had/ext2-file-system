@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
     while (traversed_len < EXT2_BLOCK_SIZE){
         curr_dir = (void *)curr_dir + rec_len;
-        if (strcmp(curr_dir->name, path_data->file_name) == 0 && curr_dir->inode != 0){
+        if (strncmp(curr_dir->name, path_data->file_name, strlen(path_data->file_name)) == 0 && curr_dir->inode != 0){
             if (curr_dir->file_type == EXT2_FT_DIR){
                 perror("cannot delete a directory");
                 return ENOENT;

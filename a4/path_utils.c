@@ -95,13 +95,9 @@ int get_inode_with_path(PathData_t *pd) {
     int traversed_len = 0;
     int rec_len = 0;
 
-    /**
-     * TODO
-     * FIX STRCMP EVERYWHERE -> CHANGE TO STRNCMP!!!
-     */
     while (traversed_len < EXT2_BLOCK_SIZE){
         curr_dir = (void *)curr_dir + rec_len;
-        if (strcmp(curr_dir->name, pd->file_name) == 0 && curr_dir->inode != 0){
+        if (strncmp(curr_dir->name, pd->file_name, strlen(pd->file_name)) == 0 && curr_dir->inode != 0){
             //dir already exists, abort mission
             return curr_dir->inode;
         }

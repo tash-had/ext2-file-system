@@ -22,7 +22,7 @@ esac
 echo "====="
 
 ./ext2_ln images/emptydisk.img /readimage /readimghardlnk
-read -p "EXT2_LN: COPIED readimage TO /test. READ IMAGE? Y/N " answer
+read -p "EXT2_LN: LN called readimghrdlnk . READ IMAGE? Y/N " answer
 case ${answer:0:1} in
     y|Y )
         ./readimage images/emptydisk.img
