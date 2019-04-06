@@ -617,13 +617,13 @@ int fix_mode_type() {
         struct ext2_group_desc *gd = get_group_desc();
         struct ext2_inode *inode_table = get_inode_table();
 
-        for (int i = 0; i < sb->s_inodes_count; i++) {
-            if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+        for (int i = 1; i < sb->s_inodes_count+1; i++) {
+            if (is_valid(get_inode_map(), i)) {
                 struct ext2_inode *curr_inode = &inode_table[i];
                 if (curr_inode->i_dtime != 0) {
                     inconsist++;
                     curr_inode->i_dtime = 0;
-                    printf("Fixed: valid inode marked for deletion: [%d]\n", i + 1);
+                    printf("Fixed: valid inode marked for deletion: [%d]\n", i);
                 }
             }
         }
@@ -640,7 +640,7 @@ int fix_mode_type() {
 
 
         struct ext2_inode *inode_table = get_inode_table();
-        for (int i = 1; i < sb->s_inodes_count; i++) {
+        for (int i = 1; i < sb->s_inodes_count+1; i++) {
             if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
                 struct ext2_inode curr_inode = inode_table[i];
                 int blocks_changed = 0;
@@ -658,7 +658,7 @@ int fix_mode_type() {
 
                 }
                 if (blocks_changed > 0) {
-                    printf("Fixed: D in-use data blocks not marked in data bitmap for inode: [%d]\n", i + 1);
+                    printf("Fixed: D in-use data blocks not marked in data bitmap for inode: [%d]\n", i);
                     inconsist++;
                 }
             }
@@ -668,16 +668,14 @@ int fix_mode_type() {
     }
 
     int total_inconsistencies() {
-        // int inodes_count = fix_inodes_count();
+        int inodes_count = fix_inodes_count();
         int blocks_count = fix_blocks_count();
-        // int mode_type = fix_mode_type();
-        // int inode_alloc = fix_inode_allocation();
-        // int dtime = fix_dtime();
-        // int block_alloc = fix_block_allocation();
+        int mode_type = fix_mode_type();
+        int inode_alloc = fix_inode_allocation();
+        int dtime = fix_dtime();
+        int block_alloc = fix_block_allocation();
 
-        // int inodes_count2 = fix_inodes_count();
-        // int blocks_count2 = fix_blocks_count();
-        // return inodes_count+
-        return blocks_count;
-        // +mode_type+inode_alloc+dtime+block_alloc+inodes_count2+blocks_count2;
+        int inodes_count2 = fix_inodes_count();
+        int blocks_count2 = fix_blocks_count();
+        return inodes_count+blocks_count+mode_type+inode_alloc+dtime+block_alloc+inodes_count2+blocks_count2;
     }
