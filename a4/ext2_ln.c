@@ -80,9 +80,6 @@ int main(int argc, char **argv) {
         memcpy(next_block, src_path, strlen(src_path+1));
         (&inode_table[free_inode-1])->i_blocks += 2;
         (&inode_table[free_inode-1])->i_size = strlen(src_path);
-
-        (&inode_table[src_inode_num-1])->i_links_count += 1;
-
         
     }
 
