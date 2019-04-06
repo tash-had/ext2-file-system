@@ -15,7 +15,7 @@ unsigned char *get_block_bitmap();
 unsigned char *get_inode_map();
 
 void init_disk(char *img_name);
-int is_valid(unsigned char *inode_bitmap, int bit_idx);
+int is_valid(unsigned char *bitmap, int bit_idx);
 int get_rec_len(char *dir_ent_name);
 void init_dir_entry(int dir_block_num, int offset,  int type, int inode_idx, char name[], int size);
 int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int type);

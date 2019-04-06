@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
                     struct ext2_dir_entry *deleted_dir_entry = (void *) curr_dir + get_rec_len(curr_dir->name);
 
                     if (deleted_dir_entry->inode > 0) {
-                        if (!is_valid(get_inode_map(), deleted_dir_entry->inode)) {
+                        if (!is_valid(get_inode_map(), deleted_dir_entry->inode - 1)) {
                             if (strlen(pd->file_name) == deleted_dir_entry->name_len && strncmp(pd->file_name, deleted_dir_entry->name, deleted_dir_entry->name_len) == 0) {
                                 allocate_inode_with_num(deleted_dir_entry->inode);
                                 (&inode_table[deleted_dir_entry->inode -1])->i_dtime = 0;

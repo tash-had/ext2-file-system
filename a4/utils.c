@@ -47,9 +47,9 @@ unsigned char *get_block_bitmap() {
     return (unsigned char *)(disk + EXT2_BLOCK_SIZE * get_group_desc()->bg_block_bitmap);
 }
 
-int is_valid(unsigned char *inode_bitmap, int bit_idx) {
+int is_valid(unsigned char *bitmap, int bit_idx) {
     int mask = 1 << (bit_idx % 8);
-    return inode_bitmap[bit_idx / 8] & mask;
+    return bitmap[bit_idx / 8] & mask;
 }
 
 /**
