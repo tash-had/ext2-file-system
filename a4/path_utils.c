@@ -86,10 +86,6 @@ void free_path_data(PathData_t *pd) {
 
 int get_inode_with_path(PathData_t *pd) {
     struct ext2_inode *inode_table = get_inode_table();
-    if (pd->path->path_part == NULL) {
-        // given a file.
-        return ENOENT;
-    }
 
     int parent_inode_num = get_parent_inode(pd);
     struct ext2_inode *parent_inode = &inode_table[parent_inode_num-1];
