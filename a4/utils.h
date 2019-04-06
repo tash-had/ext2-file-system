@@ -34,3 +34,5 @@ int fix_inode_allocation();
 int fix_dtime();
 int fix_block_allocation();
 int total_inconsistencies();
+void allocate_block_with_num(unsigned int block_num);
+void allocate_inode_with_num(unsigned int inode_num);

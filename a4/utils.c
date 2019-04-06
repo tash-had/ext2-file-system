@@ -96,6 +96,34 @@ int allocate_next_free(int type) {
     return -1;
 }
 
+void allocate_inode_with_num(unsigned int inode_num) {
+    int inode_idx = inode_num - 1;
+
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *inode_bitmap = get_inode_map();
+
+    unsigned char *byte = &inode_bitmap[inode_idx/8];
+
+    *byte |= (unsigned int)( ~(1 << (inode_idx % 8)));
+    gd->bg_free_inodes_count--;
+    sb->s_free_inodes_count--;
+}
+
+void allocate_block_with_num(unsigned int block_num) {
+    int block_idx = block_num -1;
+
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *block_bitmap = get_block_bitmap();
+
+    unsigned char *byte = &block_bitmap[block_idx/8];
+
+    *byte |= (unsigned int)( ~(1 << (block_idx % 8)));
+    gd->bg_free_blocks_count++;
+    sb->s_free_blocks_count++;
+}
+
 /**
  * Initialize an inode's default vals
  *
@@ -433,6 +461,15 @@ int fix_blocks_count(){
     }
     return sb_num_inconsistencies + gd_num_inconsistencies;
 }
+
+void set_occupied_inode(int inode_num) {
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+
+
+
+}
+
 unsigned char get_type(int mode){
     if (mode & EXT2_S_IFDIR){
         return EXT2_FT_DIR;

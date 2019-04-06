@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
                 curr_dir = (void *) curr_dir + rec_len;
                 // We are now within a directory in side the PARENT of our deleted file.
                 // We must check its padding to see if our deleted entry lies there
-                int total_rec_len = get_rec_len(curr_dir->name);
+//                int total_rec_len = get_rec_len(curr_dir->name);
                 int padding = curr_dir->rec_len - get_rec_len(curr_dir->name);
 
                 if (padding > 0)  {
@@ -51,22 +51,23 @@ int main(int argc, char **argv) {
                     if (deleted_dir_entry->inode > 0) {
                         if (!is_valid(get_inode_map(), deleted_dir_entry->inode)) {
                             if (strlen(pd->file_name) == deleted_dir_entry->name_len && strncmp(pd->file_name, deleted_dir_entry->name, deleted_dir_entry->name_len) == 0) {
+                                allocate_inode_with_num(deleted_dir_entry->inode);
+
+                                struct ext2_inode *restored_inode = get_inode_with_num(deleted_dir_entry->inode);
+
                                 for (int j = 0; j < 15; j++) {
-                                    //index
-
-                                    int free_block = allocate_next_free(BLOCK);
-                                    int free_inode = allocate_next_free(INODE);
-                                    if (free_block == -1 || free_inode == -1){
-                                        perror("No space");
-                                        return ENOSPC;
+                                    if (!restored_inode->i_block[j]) {
+                                        // no more blocks to restore
+                                        break;
+                                    } else {
+                                        allocate_block_with_num(restored_inode->i_block[j]);
                                     }
-
-                                    // initialize new inode
-                                    init_inode(deleted_dir_entry->file_type, free_inode, free_block);
-
-
                                 }
+
                             }
+                        } else {
+                            // inode is already in use again!
+                            return ENOENT;
                         }
                         // check inode bitmap.
                             // used? Cant do anything
@@ -80,7 +81,6 @@ int main(int argc, char **argv) {
                              *      Also set rec_len of prev entry to point to the start of this new
                              *      restored file
                              */
-                        struct ext2_inode *inode_bitmap
                     }
                 }
 
@@ -89,7 +89,4 @@ int main(int argc, char **argv) {
         }
     }
 
-    while (traversed_len < EXT2_BLOCK_SIZE) {
-        curr_dir = (void *) curr_dir + rec_len;
-    }
 }
