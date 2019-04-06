@@ -37,12 +37,7 @@ int add_restored_to_parent(int parent_inode_num, struct ext2_dir_entry *del) {
         }
         total_len += rec_len;
     }
-    if (del->file_type == EXT2_FT_DIR) {
-        inode_table[parent_inode_num - 1].i_links_count++;
-    }
-    // TODO set location
     del->rec_len = EXT2_BLOCK_SIZE - total_actual_size;
-//    init_dir_entry(block_num, total_actual_size, type, inode_num, name, );
     return 0;
 }
 int main(int argc, char **argv) {
@@ -116,18 +111,6 @@ int main(int argc, char **argv) {
 
                                 int ret = add_restored_to_parent(parent_inode_num, deleted_dir_entry);
                                 break;
-//                                int total_len = 0;
-//                                int rec = 0;
-//                                int block_num = parent_inode->i_block[0];
-//                                struct ext2_dir_entry *curr_dir_entry = (struct ext2_dir_entry *) (disk + EXT2_BLOCK_SIZE * block_num);
-//                                while (total_len < EXT2_BLOCK_SIZE) {
-//                                    curr_dir_entry = (void *) curr_dir_entry + rec;
-//                                    rec_len = curr_dir_entry->rec_len;
-//                                    if (actual_size < rec_len) {
-//                                        curr_dir_entry->rec_len = actual_size;
-//                                    }
-//                                    total_len += rec;
-//                                }
 
                             }
 

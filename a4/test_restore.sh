@@ -39,7 +39,7 @@ case ${answer:0:1} in
         ./ext2_restore images/emptydisk.img /readimage
     ;;
     * )
-        echo "====="
+        ./readimage images/emptydisk.img
     ;;
 esac
 echo "====="
