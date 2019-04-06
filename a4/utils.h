@@ -3,6 +3,8 @@
 #define BLOCK 0
 #define INODE 1
 
+unsigned char *disk;
+
 struct ext2_super_block *get_super_block();
 struct ext2_group_desc *get_group_desc();
 struct ext2_inode *get_inode_table();
@@ -17,5 +19,5 @@ int add_file_to_parent(int parent_inode_num, int inode_num, char name[], int typ
 int allocate_next_free(int type);
 void init_inode(int type, int inode_idx, int block_num);
 void check_valid(void *ext2_struct, char *item);
-struct ext2_inode *get_inode(unsigned int inode_number);
+struct ext2_inode *get_inode_with_num(unsigned int inode_number);
 int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num);

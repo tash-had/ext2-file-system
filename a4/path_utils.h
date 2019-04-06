@@ -26,4 +26,4 @@ void free_path_data(PathData_t *pd);
 PathData_t *split_path(char *path, char *file_name);
 int get_parent_inode(PathData_t *path_data);
 int new_file_exists(int parent_inode, PathData_t *path_data, int type);
-
+struct ext2_inode *get_inode_with_path(PathData_t *pd, int type);

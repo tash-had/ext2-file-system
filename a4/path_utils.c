@@ -81,6 +81,35 @@ void free_path_data(PathData_t *pd) {
     free(pd);
 }
 
+struct ext2_inode *get_inode_with_path(PathData_t *pd, int type) {
+    struct ext2_inode *inode_table = get_inode_table();
+    if (pd->path->path_part == NULL) {
+        // given a file.
+        return NULL;
+    }
+
+    int parent_inode_num = get_parent_inode(pd);
+    struct ext2_inode *parent_inode = &inode_table[parent_inode_num-1];
+    struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *)(disk +
+                                                                EXT2_BLOCK_SIZE*parent_inode->i_block[0]);
+
+    int traversed_len = 0;
+    int rec_len = 0;
+
+    while (traversed_len < EXT2_BLOCK_SIZE){
+        curr_dir = (void *)curr_dir + rec_len;
+        if (strcmp(curr_dir->name, pd->file_name) == 0 && curr_dir->inode != 0 &&
+            (curr_dir->file_type == type)){
+            //dir already exists, abort mission
+            return &inode_table[curr_dir->inode-1];
+        }
+        rec_len = curr_dir->rec_len;
+        traversed_len += rec_len;
+    }
+    return NULL;
+}
+
+
 /**
 * malloc_res should a pointer returned by a malloc sys call.
 */
