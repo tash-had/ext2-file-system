@@ -379,63 +379,268 @@ void deallocate(int num, int type){
         sb->s_free_inodes_count++;
     }
 }
-
-int get_first_unused_block_idx(int inode_num) {
-    struct ext2_inode inode_table = get_inode_table()[inode_num - 1];
-    unsigned int *i_block = inode_table.i_block;
-
-    for (int i = 0; i < 15; i++) {
-        if (i_block[i] == 0) {
-            return i;
+//part a
+int fix_inodes_count(){
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *bitmap = get_inode_map();
+    int count = sb->s_inodes_count / 8;
+    int free_inodes = 0;
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (!((bitmap[i] >> j) & 1)) {
+                free_inodes++;
+            }
         }
     }
-    return -1;
+    int sb_num_inconsistencies = abs(sb->s_free_inodes_count - free_inodes);
+    int gd_num_inconsistencies = abs(gd->bg_free_inodes_count - free_inodes);
+    if (sb_num_inconsistencies > 0){
+        sb->s_free_inodes_count = free_inodes;
+        printf("Fixed: superblock's free inodes counter was off by %d compared to the bitmap\n", sb_num_inconsistencies);
+    }
+
+    if (gd_num_inconsistencies > 0){
+        gd->bg_free_inodes_count = free_inodes;
+        printf("Fixed: block group's free inodes counter was off by %d compared to the bitmap\n", gd_num_inconsistencies);
+    }
+    return sb_num_inconsistencies + gd_num_inconsistencies;
+}
+//part a
+int fix_blocks_count(){
+    struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
+    unsigned char *bitmap = get_block_bitmap();
+    int count = sb->s_blocks_count / 8;
+    int free_blocks = 0;
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (!((bitmap[i] >> j) & 1)) {
+                free_blocks++;
+            }
+        }
+    }
+    int sb_num_inconsistencies = abs(sb->s_free_blocks_count - free_blocks);
+    int gd_num_inconsistencies = abs(gd->bg_free_blocks_count - free_blocks);
+    if (sb_num_inconsistencies > 0){
+        sb->s_free_blocks_count = free_blocks;
+        printf("Fixed: superblock's free blocks counter was off by %d compared to the bitmap\n", sb_num_inconsistencies);
+    }
+
+    if (gd_num_inconsistencies > 0){
+        gd->bg_free_blocks_count = free_blocks;
+        printf("Fixed: block group's free blocks counter was off by %d compared to the bitmap\n", gd_num_inconsistencies);
+    }
+    return sb_num_inconsistencies + gd_num_inconsistencies;
+}
+unsigned char get_type(int mode){
+    if (mode & EXT2_S_IFDIR){
+        return EXT2_FT_DIR;
+    }
+    else if (mode & EXT2_S_IFREG){
+        return EXT2_FT_REG_FILE;
+    }
+    else{
+        return EXT2_FT_SYMLINK;
+    }
 }
 
-int restore() {
+// part b
+int fix_mode_type() {
+    int inconsist = 0;
     struct ext2_super_block *sb = get_super_block();
+    struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
 
-    int inodes_count = sb->s_inodes_count;
-    int inode_index = 1;
-    PathNode_t *curr_path = path_data->path;
-
-    if (curr_path->next == NULL) {
-        // the path is just a filename. no need to traverse through directories, just check for duplicates
-        // in t
-        return EXT2_ROOT_INO; //root is the parent
-    }
-    for (int i = 0; i < inodes_count; i++) {
-        if (is_valid(get_inode_map(), i) && (i == inode_index)) {
+    for (int i = 1; i < sb->s_inodes_count; i++) {
+        if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
             struct ext2_inode curr_inode = inode_table[i];
             struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *) (disk +
                                                                          EXT2_BLOCK_SIZE * curr_inode.i_block[0]);
-
             int traversed_len = 0;
             int rec_len = 0;
-            int found = 0;
             while (traversed_len < EXT2_BLOCK_SIZE) {
                 curr_dir = (void *) curr_dir + rec_len;
-                char *cur_path_part = curr_path->path_part;
-                if (strcmp(curr_dir->name, cur_path_part) == 0 && curr_dir->inode != 0 &&
-                    (curr_dir->file_type == EXT2_FT_DIR)) {
-                    inode_index = curr_dir->inode - 1;
+                struct ext2_inode *inode = &inode_table[curr_dir->inode - 1];
+                unsigned char type = get_type(inode->i_mode);
+                if (type != curr_dir->file_type) {
+                    curr_dir->file_type = type;
+                    printf("Fixed: Entry type vs inode mismatch: inode [%d]\n", curr_dir->inode);
+                    inconsist++;
 
-                    if (curr_path->next->path_part == NULL) {
-                        return curr_dir->inode;
-                    }
-                    curr_path = curr_path->next;
-                    found = 1;
-                    break;
                 }
                 rec_len = curr_dir->rec_len;
                 traversed_len += rec_len;
             }
-            if (!found) {
-                return -1;
-            }
         }
     }
-    return -1;
+    return inconsist;
 }
+    int get_first_unused_block_idx(int inode_num) {
+        struct ext2_inode inode_table = get_inode_table()[inode_num - 1];
+        unsigned int *i_block = inode_table.i_block;
 
+        for (int i = 0; i < 15; i++) {
+            if (i_block[i] == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+//
+//int restore() {
+//    struct ext2_super_block *sb = get_super_block();
+//    struct ext2_inode *inode_table = get_inode_table();
+//
+//    int inodes_count = sb->s_inodes_count;
+//    int inode_index = 1;
+//    PathNode_t *curr_path = path_data->path;
+//
+//    if (curr_path->next == NULL) {
+//        // the path is just a filename. no need to traverse through directories, just check for duplicates
+//        // in t
+//        return EXT2_ROOT_INO; //root is the parent
+//    }
+//    for (int i = 0; i < inodes_count; i++) {
+//        if (is_valid(get_inode_map(), i) && (i == inode_index)) {
+//            struct ext2_inode curr_inode = inode_table[i];
+//            struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *) (disk +
+//                                                                         EXT2_BLOCK_SIZE * curr_inode.i_block[0]);
+//
+//            int traversed_len = 0;
+//            int rec_len = 0;
+//            int found = 0;
+//            while (traversed_len < EXT2_BLOCK_SIZE) {
+//                curr_dir = (void *) curr_dir + rec_len;
+//                char *cur_path_part = curr_path->path_part;
+//                if (strcmp(curr_dir->name, cur_path_part) == 0 && curr_dir->inode != 0 &&
+//                    (curr_dir->file_type == EXT2_FT_DIR)) {
+//                    inode_index = curr_dir->inode - 1;
+//
+//                    if (curr_path->next->path_part == NULL) {
+//                        return curr_dir->inode;
+//                    }
+//                    curr_path = curr_path->next;
+//                    found = 1;
+//                    break;
+//                }
+//                rec_len = curr_dir->rec_len;
+//                traversed_len += rec_len;
+//            }
+//            if (!found) {
+//                return -1;
+//            }
+//        }
+//    }
+//    return -1;
+//
+//}
+
+//part c
+    int fix_inode_allocation() {
+        int inconsist = 0;
+        struct ext2_super_block *sb = get_super_block();
+        struct ext2_group_desc *gd = get_group_desc();
+        unsigned char *bitmap = get_inode_map();
+        int count = sb->s_inodes_count / 8;
+
+
+        struct ext2_inode *inode_table = get_inode_table();
+        for (int i = 1; i < sb->s_inodes_count; i++) {
+            if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+                struct ext2_inode curr_inode = inode_table[i];
+                struct ext2_dir_entry *curr_dir = (struct ext2_dir_entry *) (disk +
+                                                                             EXT2_BLOCK_SIZE * curr_inode.i_block[0]);
+                int traversed_len = 0;
+                int rec_len = 0;
+                while (traversed_len < EXT2_BLOCK_SIZE) {
+                    curr_dir = (void *) curr_dir + rec_len;
+                    int index = curr_dir->inode - 1;
+                    unsigned char *byte = (unsigned char *) &bitmap[index / 8];
+
+                    if (!is_valid(bitmap, curr_dir->inode)) {
+                        *byte |= (unsigned int) (1 << (index % 8));
+                        inconsist++;
+                        printf("Fixed: inode [%d] not marked as in-use\n", curr_dir->inode);
+                    }
+                    rec_len = curr_dir->rec_len;
+                    traversed_len += rec_len;
+                }
+            }
+        }
+        return inconsist;
+
+    }
+
+// part d
+
+    int fix_dtime() {
+        int inconsist = 0;
+        struct ext2_super_block *sb = get_super_block();
+        struct ext2_group_desc *gd = get_group_desc();
+        struct ext2_inode *inode_table = get_inode_table();
+
+        for (int i = 0; i < sb->s_inodes_count; i++) {
+            if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+                struct ext2_inode *curr_inode = &inode_table[i];
+                if (curr_inode->i_dtime != 0) {
+                    inconsist++;
+                    curr_inode->i_dtime = 0;
+                    printf("Fixed: valid inode marked for deletion: [%d]\n", i + 1);
+                }
+            }
+        }
+        return inconsist;
+    }
+
+// part e
+    int fix_block_allocation() {
+        int inconsist = 0;
+        struct ext2_super_block *sb = get_super_block();
+        struct ext2_group_desc *gd = get_group_desc();
+        unsigned char *bitmap = get_block_bitmap();
+        int count = sb->s_blocks_count / 8;
+
+
+        struct ext2_inode *inode_table = get_inode_table();
+        for (int i = 1; i < sb->s_inodes_count; i++) {
+            if (is_valid(get_inode_map(), i) && (i == 1 || 1 >= 11)) {
+                struct ext2_inode curr_inode = inode_table[i];
+                int blocks_changed = 0;
+                unsigned int *block_ptrs = curr_inode.i_block;
+                for (int j = 0; j < 15; j++) {
+                    if (block_ptrs[j] == 0) {
+                        break;
+                    }
+                    int index = block_ptrs[j] - 1;
+                    unsigned char *byte = (unsigned char *) &bitmap[index / 8];
+                    if (!is_valid(bitmap, block_ptrs[j])) {
+                        *byte |= (unsigned int) (1 << (index % 8));
+                        blocks_changed++;
+                    }
+
+                }
+                if (blocks_changed > 0) {
+                    printf("Fixed: D in-use data blocks not marked in data bitmap for inode: [%d]\n", i + 1);
+                    inconsist++;
+                }
+            }
+        }
+        return inconsist;
+
+    }
+
+    int total_inconsistencies() {
+        // int inodes_count = fix_inodes_count();
+        int blocks_count = fix_blocks_count();
+        // int mode_type = fix_mode_type();
+        // int inode_alloc = fix_inode_allocation();
+        // int dtime = fix_dtime();
+        // int block_alloc = fix_block_allocation();
+
+        // int inodes_count2 = fix_inodes_count();
+        // int blocks_count2 = fix_blocks_count();
+        // return inodes_count+
+        return blocks_count;
+        // +mode_type+inode_alloc+dtime+block_alloc+inodes_count2+blocks_count2;
+    }

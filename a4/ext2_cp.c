@@ -17,7 +17,6 @@ int main(int argc, char **argv) {
         perror("Not absolute path");
         return ENOENT;
     }
-    struct ext2_group_desc *gd = get_group_desc();
     struct ext2_inode *inode_table = get_inode_table();
 
     PathData_t *src_path_data = split_path(src_path, NULL);
