@@ -83,7 +83,10 @@ int main(int argc, char **argv) {
         deallocate(inode_num, INODE);
         inode->i_dtime = time(NULL);
     }
-
+    /** TODO
+     * - account for case where we need to remove indirect blocks as well
+     * 
+     */
     return 0;
 
 

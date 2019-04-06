@@ -25,8 +25,15 @@ int main(int argc, char **argv) {
      */
     struct ext2_inode *inode_table = get_inode_table();
     PathData_t *src = split_path(src_path, NULL);
-    PathData_t *dst = split_path(dest_path, NULL);
+    PathData_t *dst;
 
+    if (dest_path[strlen(dest_path)-1] == '/'){
+        dst = split_path(dest_path, src->file_name);
+    }
+    else
+    {
+        dst= split_path(dest_path, NULL);  
+    }
     int src_inode_num = get_inode_with_path(src);
     
     int dest_parent_inode = get_parent_inode(dst);
@@ -61,7 +68,19 @@ int main(int argc, char **argv) {
         }
         init_inode(EXT2_FT_SYMLINK, free_inode, free_block);
         int file_added = add_file_to_parent(dest_parent_inode, free_inode, dst->file_name, EXT2_FT_SYMLINK);
+        if (file_added){
+            return ENOSPC;
+        }
 
+        /**
+         * TODO
+         *  - account for paths that need multiple blocks to store data
+         */
+        unsigned char *next_block = (unsigned char *) (disk + EXT2_BLOCK_SIZE * free_block);
+        memcpy(next_block, src_path, strlen(src_path+1));
+        (&inode_table[src_inode_num-1])->i_blocks += 2;
+        (&inode_table[src_inode_num-1])->i_size = strlen(src_path);
+        
     }
 
 
