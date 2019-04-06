@@ -498,7 +498,7 @@ int fix_inode_allocation(){
                 int index =  curr_dir->inode - 1;
                 unsigned char *byte =  (unsigned char *) &bitmap[index/8];
                 
-                if (*byte & (1 << (index% 8))){
+                if (!is_valid(bitmap, curr_dir->inode)){
                     *byte |= (unsigned int)(1 << (index % 8));
                     inconsist++;
                     printf("Fixed: inode [%d] not marked as in-use\n", curr_dir->inode);
@@ -554,8 +554,7 @@ int fix_block_allocation(){
                 }
                 int index =  block_ptrs[j] - 1;
                 unsigned char *byte =  (unsigned char *) &bitmap[index/8];
-                
-                if (*byte & (1 << (index% 8))){
+                if (!is_valid(bitmap, block_ptrs[j])){
                     *byte |= (unsigned int)(1 << (index % 8));
                     blocks_changed++;
                 }
@@ -572,14 +571,16 @@ int fix_block_allocation(){
 }
 
 int total_inconsistencies(){
-    int inodes_count = fix_inodes_count();
+    // int inodes_count = fix_inodes_count();
     int blocks_count = fix_blocks_count();
-    int mode_type = fix_mode_type();
-    int inode_alloc = fix_inode_allocation();
-    int dtime = fix_dtime();
-    int block_alloc = fix_block_allocation();
+    // int mode_type = fix_mode_type();
+    // int inode_alloc = fix_inode_allocation();
+    // int dtime = fix_dtime();
+    // int block_alloc = fix_block_allocation();
 
-    int inodes_count2 = fix_inodes_count();
-    int blocks_count2 = fix_blocks_count();
-    return inodes_count+blocks_count+mode_type+inode_alloc+dtime+block_alloc+inodes_count2+blocks_count2;
+    // int inodes_count2 = fix_inodes_count();
+    // int blocks_count2 = fix_blocks_count();
+    // return inodes_count+
+    return blocks_count;
+    // +mode_type+inode_alloc+dtime+block_alloc+inodes_count2+blocks_count2;
 }
