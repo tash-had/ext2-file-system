@@ -105,7 +105,7 @@ void allocate_inode_with_num(unsigned int inode_num) {
 
     unsigned char *byte = &inode_bitmap[inode_idx/8];
 
-    *byte |= (unsigned int)( ~(1 << (inode_idx % 8)));
+    *byte |= (unsigned int)( 1 << (inode_idx % 8));
     gd->bg_free_inodes_count--;
     sb->s_free_inodes_count--;
 }
@@ -119,7 +119,7 @@ void allocate_block_with_num(unsigned int block_num) {
 
     unsigned char *byte = &block_bitmap[block_idx/8];
 
-    *byte |= (unsigned int)( ~(1 << (block_idx % 8)));
+    *byte |= (unsigned int)( 1 << (block_idx % 8));
     gd->bg_free_blocks_count--;
     sb->s_free_blocks_count--;
 }
@@ -215,9 +215,9 @@ struct ext2_inode *get_inode_with_num(unsigned int inode_num) {
     struct ext2_inode *inode_table = get_inode_table();
     int inode_idx = inode_num - 1;
 
-    if (inode_idx > get_super_block()->s_inodes_count ||
-        (inode_idx != EXT2_ROOT_INO && inode_idx < get_super_block()->s_first_ino)) {
-    }
+//    if (inode_idx > get_super_block()->s_inodes_count ||
+//        (inode_idx != EXT2_ROOT_INO && inode_idx < get_super_block()->s_first_ino)) {
+//    }
     return &inode_table[inode_idx];
 }
 
