@@ -6,9 +6,6 @@ struct path_node {
 };
 typedef struct path_node PathNode_t;
 
-
-
-PathNode_t *init_path_list();
 void add_path_part(PathNode_t *pl, char *part);
 void free_path_list(PathNode_t *pl);
 void check_malloc(void *malloc_res);

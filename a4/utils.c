@@ -356,8 +356,22 @@ int copy_to_fs(FILE *src, struct ext2_inode *inode, int block_num) {
     } else {
         return 0;
     }
-
 }
+
+//int create_inode() {
+//    InodeMetadata_t *inodeMetadata = malloc(sizeof(struct int_pair_t));
+//
+//    int free_block = allocate_next_free(BLOCK);
+//    int free_inode = allocate_next_free(INODE);
+//    if (free_block == -1 || free_inode == -1){
+//        perror("No space");
+//        return ENOSPC;
+//    }
+//
+//    // initialize new inode
+//    init_inode(EXT2_S_IFDIR, free_inode, free_block);
+//
+//}
 
 
 
