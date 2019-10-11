@@ -13,26 +13,26 @@ int main(int argc, char **argv) {
     char *dest_path = argv[3];
     int sym_link = 0;
 
-    if (argc == 5 && strcmp(src_path, "-s") == 0) {
+    if (argc == 5 && strncmp(src_path, "-s", strlen("-s")) == 0) {
         sym_link = 1;
         src_path = argv[3];
         dest_path = argv[4];
     }
 
-    /**
-     * TODO
-     * - Do error checking
-     */
+    if (dest_path[strlen(dest_path)-1] == '/' || src_path[strlen(src_path)-1] == '/' ){
+        perror("Must not be a directory");
+        return ENOENT;
+    }
     struct ext2_inode *inode_table = get_inode_table();
     PathData_t *src = split_path(src_path, NULL);
-    PathData_t *dst;
+    PathData_t *dst = split_path(dest_path, NULL);
 
-    if (dest_path[strlen(dest_path)-1] == '/'){
+    if (dest_path[(int) strlen(dest_path)-1] == '/'){
         dst = split_path(dest_path, src->file_name);
     }
     else
     {
-        dst= split_path(dest_path, NULL);  
+        dst= split_path(dest_path, NULL);
     }
     int src_inode_num = get_inode_with_path(src);
     
@@ -72,10 +72,6 @@ int main(int argc, char **argv) {
             return ENOSPC;
         }
 
-        /**
-         * TODO
-         *  - account for paths that need multiple blocks to store data
-         */
         unsigned char *next_block = (unsigned char *) (disk + EXT2_BLOCK_SIZE * free_block);
         memcpy(next_block, src_path, strlen(src_path+1));
         (&inode_table[free_inode-1])->i_blocks += 2;

@@ -188,7 +188,7 @@ int get_parent_inode(PathData_t *path_data) {
             while (traversed_len < EXT2_BLOCK_SIZE) {
                 curr_dir = (void *) curr_dir + rec_len;
                 char *cur_path_part = curr_path->path_part;
-                if (strcmp(curr_dir->name, cur_path_part) == 0 && curr_dir->inode != 0 &&
+                if (strncmp(curr_dir->name, cur_path_part, strlen(curr_dir->name)) == 0 && curr_dir->inode != 0 &&
                     (curr_dir->file_type == EXT2_FT_DIR)) {
                     inode_index = curr_dir->inode - 1;
 
@@ -215,9 +215,6 @@ struct ext2_inode *get_inode_with_num(unsigned int inode_num) {
     struct ext2_inode *inode_table = get_inode_table();
     int inode_idx = inode_num - 1;
 
-//    if (inode_idx > get_super_block()->s_inodes_count ||
-//        (inode_idx != EXT2_ROOT_INO && inode_idx < get_super_block()->s_first_ino)) {
-//    }
     return &inode_table[inode_idx];
 }
 
@@ -240,7 +237,7 @@ int new_file_exists(int parent_inode, PathData_t *path_data, int type) {
              */
             while (traversed_len < EXT2_BLOCK_SIZE) {
                 curr_dir = (void *) curr_dir + rec_len;
-                if (strcmp(curr_dir->name, path_data->file_name) == 0 && curr_dir->inode != 0 &&
+                if (strncmp(curr_dir->name, path_data->file_name, strlen(path_data->file_name)) == 0 && curr_dir->inode != 0 &&
                     (curr_dir->file_type == type)) {
                     //dir already exists, abort mission
                     return 1;
@@ -406,7 +403,7 @@ void deallocate(int num, int type){
         sb->s_free_inodes_count++;
     }
 }
-//part a
+
 int fix_inodes_count(){
     struct ext2_super_block *sb = get_super_block();
     struct ext2_group_desc *gd = get_group_desc();
@@ -433,7 +430,7 @@ int fix_inodes_count(){
     }
     return sb_num_inconsistencies + gd_num_inconsistencies;
 }
-//part a
+
 int fix_blocks_count(){
     struct ext2_super_block *sb = get_super_block();
     struct ext2_group_desc *gd = get_group_desc();
