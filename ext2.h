@@ -33,7 +33,7 @@ struct ext2_super_block {
 	unsigned int   s_free_inodes_count; /* Free inodes count */
 	
 	/******************************************************************
-	 * The rest of the ext2 superblock structure is irrelevant to the
+	 * The rest of the ext2 superblock structure is irrelevent to the
 	 * assignment, but is included below, for completeness.
 	 ******************************************************************/
 
